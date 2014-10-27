@@ -14,6 +14,10 @@
 		33B458DA19FE679F00330BC4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 33B458D919FE679F00330BC4 /* Images.xcassets */; };
 		33B458DD19FE679F00330BC4 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 33B458DB19FE679F00330BC4 /* LaunchScreen.xib */; };
 		33B458E919FE679F00330BC4 /* DoPersistenceFrameworkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B458E819FE679F00330BC4 /* DoPersistenceFrameworkTests.m */; };
+		33B458F519FE67E700330BC4 /* DPDBObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B458F419FE67E700330BC4 /* DPDBObject.m */; };
+		33B458F819FE690400330BC4 /* DBMETA.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B458F719FE690400330BC4 /* DBMETA.m */; };
+		33B458FC19FE6F0100330BC4 /* Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B458FB19FE6F0100330BC4 /* Test.m */; };
+		33B458FF19FE70DD00330BC4 /* DBMETAPROP.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B458FE19FE70DD00330BC4 /* DBMETAPROP.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +44,14 @@
 		33B458E219FE679F00330BC4 /* DoPersistenceFrameworkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DoPersistenceFrameworkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		33B458E719FE679F00330BC4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		33B458E819FE679F00330BC4 /* DoPersistenceFrameworkTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DoPersistenceFrameworkTests.m; sourceTree = "<group>"; };
+		33B458F319FE67E700330BC4 /* DPDBObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPDBObject.h; sourceTree = "<group>"; };
+		33B458F419FE67E700330BC4 /* DPDBObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DPDBObject.m; sourceTree = "<group>"; };
+		33B458F619FE690400330BC4 /* DBMETA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBMETA.h; sourceTree = "<group>"; };
+		33B458F719FE690400330BC4 /* DBMETA.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBMETA.m; sourceTree = "<group>"; };
+		33B458FA19FE6F0100330BC4 /* Test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Test.h; sourceTree = "<group>"; };
+		33B458FB19FE6F0100330BC4 /* Test.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Test.m; sourceTree = "<group>"; };
+		33B458FD19FE70DD00330BC4 /* DBMETAPROP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBMETAPROP.h; sourceTree = "<group>"; };
+		33B458FE19FE70DD00330BC4 /* DBMETAPROP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBMETAPROP.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +93,8 @@
 		33B458CB19FE679F00330BC4 /* DoPersistenceFramework */ = {
 			isa = PBXGroup;
 			children = (
+				33B458F919FE6EF600330BC4 /* Demo */,
+				33B458F219FE67BC00330BC4 /* Classes */,
 				33B458D019FE679F00330BC4 /* AppDelegate.h */,
 				33B458D119FE679F00330BC4 /* AppDelegate.m */,
 				33B458D319FE679F00330BC4 /* ViewController.h */,
@@ -117,6 +131,28 @@
 				33B458E719FE679F00330BC4 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		33B458F219FE67BC00330BC4 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				33B458F319FE67E700330BC4 /* DPDBObject.h */,
+				33B458F419FE67E700330BC4 /* DPDBObject.m */,
+				33B458F619FE690400330BC4 /* DBMETA.h */,
+				33B458F719FE690400330BC4 /* DBMETA.m */,
+				33B458FD19FE70DD00330BC4 /* DBMETAPROP.h */,
+				33B458FE19FE70DD00330BC4 /* DBMETAPROP.m */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		33B458F919FE6EF600330BC4 /* Demo */ = {
+			isa = PBXGroup;
+			children = (
+				33B458FA19FE6F0100330BC4 /* Test.h */,
+				33B458FB19FE6F0100330BC4 /* Test.m */,
+			);
+			path = Demo;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -219,8 +255,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				33B458F519FE67E700330BC4 /* DPDBObject.m in Sources */,
+				33B458FF19FE70DD00330BC4 /* DBMETAPROP.m in Sources */,
 				33B458D519FE679F00330BC4 /* ViewController.m in Sources */,
 				33B458D219FE679F00330BC4 /* AppDelegate.m in Sources */,
+				33B458FC19FE6F0100330BC4 /* Test.m in Sources */,
+				33B458F819FE690400330BC4 /* DBMETA.m in Sources */,
 				33B458CF19FE679F00330BC4 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -344,6 +384,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = DoPersistenceFramework/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -354,6 +395,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = DoPersistenceFramework/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
