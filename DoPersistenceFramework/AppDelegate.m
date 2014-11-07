@@ -8,6 +8,7 @@
 
 #import "AppDelegate.h"
 #import "Test.h"
+#import "Test1.h"
 
 @interface AppDelegate ()
 
@@ -18,7 +19,18 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
-    Test *t = [[Test alloc] init];
+    Test *test = [[Test alloc] init];
+    Test1 *t1 = [[Test1 alloc] init];
+    t1.name = @"成功了吗";
+    test.t1 = t1;
+    test.str = @"fasdfs";
+    [test save];
+//
+    NSArray *ts = [Test allObjects];
+    Test *tt = [ts lastObject];
+    Test1 *tt1 = tt.t1;
+    NSLog(@"%@",tt1.name);
+//    NSLog(@"%lu",(unsigned long)[[Test allObjects] count]);
     return YES;
 }
 

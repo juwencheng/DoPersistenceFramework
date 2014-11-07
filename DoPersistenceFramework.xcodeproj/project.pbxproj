@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3344AB8D1A076D1000538864 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3344AB8C1A076D1000538864 /* libsqlite3.dylib */; };
+		3344AB8F1A076D1F00538864 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3344AB8E1A076D1F00538864 /* libz.dylib */; };
+		3344AB921A076E6D00538864 /* DPDBManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3344AB911A076E6D00538864 /* DPDBManager.m */; };
+		3344AB951A079F9600538864 /* Test1.m in Sources */ = {isa = PBXBuildFile; fileRef = 3344AB941A079F9600538864 /* Test1.m */; };
+		33B384A71A0B625500F617F4 /* NSDictionary+KeyExtend.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B384A41A0B625500F617F4 /* NSDictionary+KeyExtend.m */; };
+		33B384A81A0B625500F617F4 /* NSString+DOTypeConvert.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B384A61A0B625500F617F4 /* NSString+DOTypeConvert.m */; };
+		33B384AA1A0B927800F617F4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33B384A91A0B927800F617F4 /* Foundation.framework */; };
 		33B458CF19FE679F00330BC4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B458CE19FE679F00330BC4 /* main.m */; };
 		33B458D219FE679F00330BC4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B458D119FE679F00330BC4 /* AppDelegate.m */; };
 		33B458D519FE679F00330BC4 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B458D419FE679F00330BC4 /* ViewController.m */; };
@@ -31,6 +38,18 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3344AB8C1A076D1000538864 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
+		3344AB8E1A076D1F00538864 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		3344AB901A076E6D00538864 /* DPDBManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPDBManager.h; sourceTree = "<group>"; };
+		3344AB911A076E6D00538864 /* DPDBManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DPDBManager.m; sourceTree = "<group>"; };
+		3344AB931A079F9600538864 /* Test1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Test1.h; sourceTree = "<group>"; };
+		3344AB941A079F9600538864 /* Test1.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Test1.m; sourceTree = "<group>"; };
+		3344AB961A07A60700538864 /* DPConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DPConstants.h; sourceTree = "<group>"; };
+		33B384A31A0B625500F617F4 /* NSDictionary+KeyExtend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+KeyExtend.h"; sourceTree = "<group>"; };
+		33B384A41A0B625500F617F4 /* NSDictionary+KeyExtend.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+KeyExtend.m"; sourceTree = "<group>"; };
+		33B384A51A0B625500F617F4 /* NSString+DOTypeConvert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+DOTypeConvert.h"; sourceTree = "<group>"; };
+		33B384A61A0B625500F617F4 /* NSString+DOTypeConvert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+DOTypeConvert.m"; sourceTree = "<group>"; };
+		33B384A91A0B927800F617F4 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		33B458C919FE679F00330BC4 /* DoPersistenceFramework.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DoPersistenceFramework.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		33B458CD19FE679F00330BC4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		33B458CE19FE679F00330BC4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -59,6 +78,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				33B384AA1A0B927800F617F4 /* Foundation.framework in Frameworks */,
+				3344AB8F1A076D1F00538864 /* libz.dylib in Frameworks */,
+				3344AB8D1A076D1000538864 /* libsqlite3.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,6 +97,9 @@
 		33B458C019FE679F00330BC4 = {
 			isa = PBXGroup;
 			children = (
+				33B384A91A0B927800F617F4 /* Foundation.framework */,
+				3344AB8E1A076D1F00538864 /* libz.dylib */,
+				3344AB8C1A076D1000538864 /* libsqlite3.dylib */,
 				33B458CB19FE679F00330BC4 /* DoPersistenceFramework */,
 				33B458E519FE679F00330BC4 /* DoPersistenceFrameworkTests */,
 				33B458CA19FE679F00330BC4 /* Products */,
@@ -136,12 +161,19 @@
 		33B458F219FE67BC00330BC4 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				33B384A31A0B625500F617F4 /* NSDictionary+KeyExtend.h */,
+				33B384A41A0B625500F617F4 /* NSDictionary+KeyExtend.m */,
+				33B384A51A0B625500F617F4 /* NSString+DOTypeConvert.h */,
+				33B384A61A0B625500F617F4 /* NSString+DOTypeConvert.m */,
 				33B458F319FE67E700330BC4 /* DPDBObject.h */,
 				33B458F419FE67E700330BC4 /* DPDBObject.m */,
 				33B458F619FE690400330BC4 /* DBMETA.h */,
 				33B458F719FE690400330BC4 /* DBMETA.m */,
 				33B458FD19FE70DD00330BC4 /* DBMETAPROP.h */,
 				33B458FE19FE70DD00330BC4 /* DBMETAPROP.m */,
+				3344AB901A076E6D00538864 /* DPDBManager.h */,
+				3344AB911A076E6D00538864 /* DPDBManager.m */,
+				3344AB961A07A60700538864 /* DPConstants.h */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -151,6 +183,8 @@
 			children = (
 				33B458FA19FE6F0100330BC4 /* Test.h */,
 				33B458FB19FE6F0100330BC4 /* Test.m */,
+				3344AB931A079F9600538864 /* Test1.h */,
+				3344AB941A079F9600538864 /* Test1.m */,
 			);
 			path = Demo;
 			sourceTree = "<group>";
@@ -258,8 +292,12 @@
 				33B458F519FE67E700330BC4 /* DPDBObject.m in Sources */,
 				33B458FF19FE70DD00330BC4 /* DBMETAPROP.m in Sources */,
 				33B458D519FE679F00330BC4 /* ViewController.m in Sources */,
+				33B384A81A0B625500F617F4 /* NSString+DOTypeConvert.m in Sources */,
+				3344AB951A079F9600538864 /* Test1.m in Sources */,
 				33B458D219FE679F00330BC4 /* AppDelegate.m in Sources */,
 				33B458FC19FE6F0100330BC4 /* Test.m in Sources */,
+				33B384A71A0B625500F617F4 /* NSDictionary+KeyExtend.m in Sources */,
+				3344AB921A076E6D00538864 /* DPDBManager.m in Sources */,
 				33B458F819FE690400330BC4 /* DBMETA.m in Sources */,
 				33B458CF19FE679F00330BC4 /* main.m in Sources */,
 			);
@@ -454,6 +492,7 @@
 				33B458EE19FE679F00330BC4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		33B458EF19FE679F00330BC4 /* Build configuration list for PBXNativeTarget "DoPersistenceFrameworkTests" */ = {
 			isa = XCConfigurationList;
@@ -462,6 +501,7 @@
 				33B458F119FE679F00330BC4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

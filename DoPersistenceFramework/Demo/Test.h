@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DPDBObject.h"
+#import "Test1.h"
 @interface Test : DPDBObject
 
 @property (nonatomic,strong) NSString *str;
@@ -19,6 +20,6 @@
 @property (nonatomic)        int          aInt;
 @property (nonatomic)        float        aFloat;
 @property (nonatomic)        double       aDouble;
-
+@property (nonatomic)        Test1        *t1;
 
 @end

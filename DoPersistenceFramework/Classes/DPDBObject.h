@@ -19,12 +19,16 @@
 //包括更新方法
 - (void)save;
 
-- (void)deleteMe;
+- (NSError *)deleteMe;
 
-- (void)pk;
+- (NSInteger)pk;
+
+//+ (DPDBObject *)queryByPk:(NSInteger)pk;
 
 + (NSArray *)allObjects;
 
++ (void)syncSeq:(NSInteger)seq;
 
++ (NSInteger)currentSeq;
 
 @end

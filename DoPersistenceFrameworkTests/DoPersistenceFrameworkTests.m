@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+#import "DPDBObject.h"
+#import "Test.h"
 
 @interface DoPersistenceFrameworkTests : XCTestCase
 
@@ -17,7 +19,6 @@
 
 - (void)setUp {
     [super setUp];
-    // Put setup code here. This method is called before the invocation of each test method in the class.
 }
 
 - (void)tearDown {
@@ -27,7 +28,10 @@
 
 - (void)testExample {
     // This is an example of a functional test case.
-    XCTAssert(YES, @"Pass");
+//    Test *test = [[Test alloc] init];
+//    test.str = @"fasdfs";
+//    [test save];
+    
 }
 
 - (void)testPerformanceExample {

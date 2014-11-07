@@ -17,6 +17,6 @@
 @property (nonatomic,strong) NSString *query;
 @property (nonatomic,strong) NSString *tablename;
 @property (nonatomic,strong) NSArray  *props;
-
+@property (nonatomic,strong) NSArray  *relation;
 
 @end

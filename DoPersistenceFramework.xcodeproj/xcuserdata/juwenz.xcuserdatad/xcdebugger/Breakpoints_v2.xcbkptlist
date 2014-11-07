@@ -2,4 +2,68 @@
 <Bucket
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoPersistenceFramework/Classes/DPDBObject.m"
+            timestampString = "437023705.946301"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "319"
+            endingLineNumber = "319"
+            landmarkName = "+doInternalQuery:database:classMeta:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoPersistenceFramework/Classes/DPDBObject.m"
+            timestampString = "437023705.946301"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "351"
+            endingLineNumber = "351"
+            landmarkName = "+doInternalQuery:database:classMeta:"
+            landmarkType = "5">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "+[DPDBObject doInternalQuery:database:classMeta:]"
+                  moduleName = "DoPersistenceFramework"
+                  urlString = "file:///Users/juwenz/projects/%E5%AE%9E%E9%AA%8C%E5%AE%A4/DoPersistenceFramework/DoPersistenceFramework/Classes/DPDBObject.m"
+                  timestampString = "437023391.263684"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "350"
+                  endingLineNumber = "350"
+                  offsetFromSymbolStart = "2751">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "+[DPDBObject doInternalQuery:database:classMeta:]"
+                  moduleName = "DoPersistenceFramework"
+                  urlString = "file:///Users/juwenz/projects/%E5%AE%9E%E9%AA%8C%E5%AE%A4/DoPersistenceFramework/DoPersistenceFramework/Classes/DPDBObject.m"
+                  timestampString = "437023391.263925"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "350"
+                  endingLineNumber = "350"
+                  offsetFromSymbolStart = "2756">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>
