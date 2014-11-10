@@ -27,6 +27,8 @@
 
 + (NSArray *)allObjects;
 
++ (void)deleteAll;
+
 + (void)syncSeq:(NSInteger)seq;
 
 + (NSInteger)currentSeq;

@@ -45,81 +45,9 @@
 - (void)save
 {
     sqlite3 *db = [DPDBManager database];
-    sqlite3_stmt *stmt;
-    NSError *err;
-    if (pk < 0) {
-        pk = [DPDBManager seqWithClazz:classMeta.tablename];
-        NSLog(@"pk : %d",pk);
-        if (sqlite3_prepare_v2(db, [classMeta.insert UTF8String], -1, &stmt, nil) == SQLITE_OK) {
-            NSString *type;
-            NSString *name;
-            DBMETAPROP *prop;
-            NSArray *properties = classMeta.props;
-            int position = 1;
-            sqlite3_bind_int(stmt, position++, pk);
-            for (int i=0,len=properties.count; i<len; i++) {
-                prop = properties[i];
-                if (!prop.transient) {
-                    name = prop.propName;
-                    type = prop.dbtype;
-                    if (type != nil) {
-                        if ([[type lowercaseString] isEqualToString:@"integer"]) {
-                            sqlite3_bind_int(stmt, position, [[self valueForKey:name] intValue]);
-                        }else if([[type lowercaseString]isEqualToString:@"double"]
-                                 || [[type lowercaseString] isEqualToString:@"float"]
-                                 || [[type lowercaseString]isEqualToString:@"real"]){
-                            sqlite3_bind_double(stmt, position, [[self valueForKey:name] doubleValue]);
-                        }else if([[type lowercaseString] isEqualToString:@"text"]){
-                            sqlite3_bind_text(stmt, position, [[self valueForKey:name] UTF8String], -1, NULL);
-                        }
-                        else{
-                            NSLog(@"%@ 类型暂未实现",type);
-                        }
-                        position ++;
-                    }
-                }else{
-                    
-//                    NSLog(@"暂时未实现集合和对象类型");
-                    if (isCollectionType(prop.obType)) {
-                        NSLog(@"集合类型");
-                        //集合不为空
-                        if([self valueForKey:name]!=nil){
-                            
-                        }
-                    }else if ([NSClassFromString(prop.obType) isSubclassOfClass:[DPDBObject class]]){
-                        DPDBObject *model = [self valueForKey:prop.propName];
-                        if (model) {
-                            //先保存关系
-                            //@"create table if not exists %@_%@ (pk integer  auto_increment primary key, parent_id integer, child_id integer)"
-                            //再保存对象
-                            [model save];
-                            NSInteger refSeq = [model pk];
-                            char *errmsg = NULL;
-                            int result ;
-                            NSString *updateRelation = [NSString stringWithFormat:@"insert into %@_%@(parent_id,child_id) values(%d,%d)",classMeta.tablename,prop.obType,pk,refSeq];
-                            if ((result = sqlite3_exec(db, [updateRelation UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
-                                NSLog(@"更新关系失败 : %@_%@  errorCode : %d",classMeta.tablename,prop.obType,result);
-                            }else{
-                                NSLog(@"更新关系成功表: %@_%@ ",classMeta.tablename,prop.obType);
-                            }
-                        }
-                    }
-                }
-                
-            }
-            if (sqlite3_step(stmt) != SQLITE_DONE) {
-                err = [NSError errorWithDomain:kDPDBErrorDomain code:kDPDBInsertDataBindError userInfo:@{@"error":@"SQL绑定数据错误，请检查"}];
-            }
-            sqlite3_finalize(stmt);
-        }else{
-            err = [NSError errorWithDomain:kDPDBErrorDomain code:kDPDBInsertSQLError userInfo:@{@"error":[NSString stringWithFormat: @"插入语句 <%@> 错误，请检查",classMeta.insert]}];
-        }
-    }else{
-        
-    }
+    [[self class] doInternalSave:self database:db classMeta:classMeta];
+    NSLog(@"%d",pk);
 }
-
-
 
 - (NSError *)deleteMe
 {
@@ -268,6 +196,7 @@
     meta.create = [NSString stringWithFormat:@"create table if not exists %@ (pk integer primary key , %@ )",meta.tablename,[create substringToIndex:create.length-1]];
     meta.update = [NSString stringWithFormat:@"update %@ %@ where pk = ?",meta.tablename,[update substringToIndex:update.length-1]];
     meta.query = [NSString stringWithFormat:@"select pk , %@ from %@",[ins substringToIndex:(ins.length-1)],meta.tablename];
+    meta.del = [NSString stringWithFormat:@"delete from %@",meta.tablename];
     
     [[[DPDBManager singleton] metaInfos] setObject:meta forKey:meta.tablename];
     
@@ -349,7 +278,7 @@
                     if (isCollectionType(prop.obType)) {
                         
                     }else if([NSClassFromString(prop.obType) isSubclassOfClass:[DPDBObject class]]){
-                        NSString *queryRelation = [NSString stringWithFormat:@"select child_id from %@_%@ where parent_id = %d",meta.tablename,prop.obType,thePk];
+                        NSString *queryRelation = [NSString stringWithFormat:@"select child_id from %@_%@ where parent_id = %ld",meta.tablename,prop.obType,(long)thePk];
                         NSInteger refPk = 0;
                         sqlite3_stmt *refStmt;
                         if (sqlite3_prepare_v2(db, [queryRelation UTF8String], -1, &refStmt, nil) == SQLITE_OK) {
@@ -384,62 +313,13 @@
     [self buildMeta];
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
-//    sqlite3_stmt *stmt;
     NSString *query;
     NSInteger pk;
     for (int i = 0, len = pks.count; i < len; i++) {
         pk = [pks[i] integerValue];
         query = [meta.query stringByAppendingFormat:@" where pk = %d",pk];
-//        NSArray *props = meta.props;
         [models addObjectsFromArray:[self doInternalQuery:query database:db classMeta:meta]];
-//        if (sqlite3_prepare_v2(db, [query UTF8String], -1, &stmt, nil) == SQLITE_OK) {
-//            id model;
-//            while (sqlite3_step(stmt) == SQLITE_ROW) {
-//                model = [[[self class] alloc] init];
-//                NSString *type;
-//                NSString *name;
-//                int position = 0;
-//                DBMETAPROP *prop ;
-//                //            [model setValue:[NSNumber numberWithInt:sqlite3_column_int(stmt, position++)] forKey:@"pk"];
-//                NSInteger thePk =sqlite3_column_int(stmt, position++);
-//                [model setPK:thePk];
-//                for (int i=0,len=props.count; i<len; i++) {
-//                    prop = props[i];
-//                    name = prop.propName;
-//                    type = prop.dbtype;
-//                    if (!prop.transient) {
-//                        if (type != nil) {
-//                            if ([[type lowercaseString] isEqualToString:@"integer"]
-//                                || [[type lowercaseString] isEqualToString:@"double"]
-//                                || [[type lowercaseString ] isEqualToString:@"float"]
-//                                || [[type lowercaseString] isEqualToString:@"real"]) {
-//                                [model setValue:[NSNumber numberWithInt: sqlite3_column_int(stmt, position)] forKey:name];
-//                            }else if([[type lowercaseString] isEqualToString:@"text"]){
-//                                const char *columnValue =(char *) sqlite3_column_text(stmt, position);
-//                                columnValue = (columnValue == NULL)?"":columnValue;
-//                                [model setValue:[NSString stringWithUTF8String:columnValue] forKey:name];
-//                            }
-//                            else{
-//                                NSLog(@"%@ 类型暂未实现",type);
-//                            }
-//                            position ++;
-//                        }
-//                    }else{
-//                        if (isCollectionType(prop.obType)) {
-//                            
-//                        }else if([NSClassFromString(prop.obType) isSubclassOfClass:[DPDBObject class]]){
-//                            
-//                        }
-//                    }
-//                    [models addObject:model];
-//                    
-//                }
-//                
-//            }
-//            sqlite3_finalize(stmt);
-//        }
     }
-    
     
     return models;
 }
@@ -447,62 +327,114 @@
 + (NSArray *)allObjects
 {
     [self buildMeta];
-//    NSMutableArray *result = [NSMutableArray array];
     NSArray *result;
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
-//    sqlite3_stmt *stmt;
     NSString *query = meta.query;
-//    NSArray *props = meta.props;
-//    if (sqlite3_prepare_v2(db, [query UTF8String], -1, &stmt, nil) == SQLITE_OK) {
-//        id model;
-//        while (sqlite3_step(stmt) == SQLITE_ROW) {
-//            model = [[[self class] alloc] init];
-//            NSString *type;
-//            NSString *name;
-//            int position = 0;
-//            DBMETAPROP *prop ;
-//            //            [model setValue:[NSNumber numberWithInt:sqlite3_column_int(stmt, position++)] forKey:@"pk"];
-//            NSInteger thePk =sqlite3_column_int(stmt, position++);
-//            [model setPK:thePk];
-//            for (int i=0,len=props.count; i<len; i++) {
-//                prop = props[i];
-//                name = prop.propName;
-//                type = prop.dbtype;
-//                if (!prop.transient) {
-//                    if (type != nil) {
-//                        if ([[type lowercaseString] isEqualToString:@"integer"]
-//                            || [[type lowercaseString] isEqualToString:@"double"]
-//                            || [[type lowercaseString ] isEqualToString:@"float"]
-//                            || [[type lowercaseString] isEqualToString:@"real"]) {
-//                            [model setValue:[NSNumber numberWithInt: sqlite3_column_int(stmt, position)] forKey:name];
-//                        }else if([[type lowercaseString] isEqualToString:@"text"]){
-//                            const char *columnValue =(char *) sqlite3_column_text(stmt, position);
-//                            columnValue = (columnValue == NULL)?"":columnValue;
-//                            [model setValue:[NSString stringWithUTF8String:columnValue] forKey:name];
-//                        }
-//                        else{
-//                            NSLog(@"%@ 类型暂未实现",type);
-//                        }
-//                        position ++;
-//                    }
-//                }else{
-//                    if (isCollectionType(prop.obType)) {
-//                        
-//                    }else if([NSClassFromString(prop.obType) isSubclassOfClass:[DPDBObject class]]){
-//                        
-//                    }
-//                }
-//                
-//                
-//            }
-////            [model addPropertiesObserver];
-//            [result addObject:model];
-//        }
-//    }
+
     result = [self doInternalQuery:query database:db classMeta:meta];
-//    sqlite3_finalize(stmt);
     return result;
+}
+
++ (void)deleteAll
+{
+    [self buildMeta];
+    char *errmsg = NULL;
+    int result ;
+    sqlite3 *db = [DPDBManager database];
+    DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
+    if ((result = sqlite3_exec(db, [meta.del UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
+        NSLog(@"删除全部失败");
+    }else{
+        NSLog(@"删除全部成功");
+    }
+}
+
++ (void)saveObjects:(NSArray *)models
+{
+    [self buildMeta];
+    sqlite3 *db = [DPDBManager database];
+    DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
+    for (id model in models) {
+        [self doInternalSave:model database:db classMeta:meta];
+    }
+}
+
++ (void)doInternalSave:(DPDBObject *)model database:(sqlite3 *)db classMeta:(DBMETA*)meta
+{
+    sqlite3_stmt *stmt;
+    NSError *err;
+    NSInteger pk = [model pk];
+    if (pk < 0) {
+        pk = [DPDBManager seqWithClazz:meta.tablename];
+        [model setPK:pk];
+        if (sqlite3_prepare_v2(db, [meta.insert UTF8String], -1, &stmt, nil) == SQLITE_OK) {
+            NSString *type;
+            NSString *name;
+            DBMETAPROP *prop;
+            NSArray *properties = meta.props;
+            int position = 1;
+            sqlite3_bind_int(stmt, position++, pk);
+            for (int i=0,len=properties.count; i<len; i++) {
+                prop = properties[i];
+                if (!prop.transient) {
+                    name = prop.propName;
+                    type = prop.dbtype;
+                    if (type != nil) {
+                        if ([[type lowercaseString] isEqualToString:@"integer"]) {
+                            sqlite3_bind_int(stmt, position, [[model valueForKey:name] intValue]);
+                        }else if([[type lowercaseString]isEqualToString:@"double"]
+                                 || [[type lowercaseString] isEqualToString:@"float"]
+                                 || [[type lowercaseString]isEqualToString:@"real"]){
+                            sqlite3_bind_double(stmt, position, [[model valueForKey:name] doubleValue]);
+                        }else if([[type lowercaseString] isEqualToString:@"text"]){
+                            sqlite3_bind_text(stmt, position, [[model valueForKey:name] UTF8String], -1, NULL);
+                        }
+                        else{
+                            NSLog(@"%@ 类型暂未实现",type);
+                        }
+                        position ++;
+                    }
+                }else{
+                    
+                    //                    NSLog(@"暂时未实现集合和对象类型");
+                    if (isCollectionType(prop.obType)) {
+                        NSLog(@"集合类型");
+                        //集合不为空
+                        if([model valueForKey:name]!=nil){
+                            
+                        }
+                    }else if ([NSClassFromString(prop.obType) isSubclassOfClass:[DPDBObject class]]){
+                        DPDBObject *subModel = [model valueForKey:prop.propName];
+                        if (subModel) {
+                            //先保存关系
+                            //@"create table if not exists %@_%@ (pk integer  auto_increment primary key, parent_id integer, child_id integer)"
+                            //再保存对象
+                            [subModel save];
+                            NSInteger refSeq = [subModel pk];
+                            char *errmsg = NULL;
+                            int result ;
+                            NSString *updateRelation = [NSString stringWithFormat:@"insert into %@_%@(parent_id,child_id) values(%d,%d)",meta.tablename,prop.obType,pk,refSeq];
+                            if ((result = sqlite3_exec(db, [updateRelation UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
+                                NSLog(@"更新关系失败 : %@_%@  errorCode : %d",meta.tablename,prop.obType,result);
+                            }else{
+                                NSLog(@"更新关系成功表: %@_%@ ",meta.tablename,prop.obType);
+                            }
+                        }
+                    }
+                }
+                
+            }
+            if (sqlite3_step(stmt) != SQLITE_DONE) {
+                err = [NSError errorWithDomain:kDPDBErrorDomain code:kDPDBInsertDataBindError userInfo:@{@"error":@"SQL绑定数据错误，请检查"}];
+            }
+            sqlite3_finalize(stmt);
+        }else{
+            err = [NSError errorWithDomain:kDPDBErrorDomain code:kDPDBInsertSQLError userInfo:@{@"error":[NSString stringWithFormat: @"插入语句 <%@> 错误，请检查",meta.insert]}];
+        }
+    }else{
+        
+    }
 }
 
 + (NSDictionary *)classPropertiesWithType
