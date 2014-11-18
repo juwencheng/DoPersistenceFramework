@@ -9,6 +9,7 @@
 #import "AppDelegate.h"
 #import "Test.h"
 #import "Test1.h"
+#import "NSArray+DPModelExtention.h"
 
 @interface AppDelegate ()
 
@@ -19,19 +20,42 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
-    Test *test = [[Test alloc] init];
-    Test1 *t1 = [[Test1 alloc] init];
-    t1.name = @"成功了吗";
-    test.t1 = t1;
-    test.str = @"fasdfs";
-    [test save];
-//
-    NSArray *ts = [Test allObjects];
-    Test *tt = [ts lastObject];
-    Test1 *tt1 = tt.t1;
-    NSLog(@"%@",tt1.name);
+    
+    
+//    [Test1 deleteAll];
+    [self addRelationObjects];
+    
+//    [NSThread sleepForTimeInterval:1];
+    
+    [Test deleteAll];
+    NSLog(@"%d",[Test1 allObjects].count);
+//    NSAssert([Test allObjects].count == 0, @"成功");
+//    NSAssert([Test1 allObjects].count == 0,@"成功");
+
+//    Test1 *tt1 = tt.t1;
+//    NSArray *arr = tt.arr;
+//    NSLog(@"%lu",(unsigned long)arr.count);
 //    NSLog(@"%lu",(unsigned long)[[Test allObjects] count]);
     return YES;
+}
+
+- (void)addRelationObjects
+{
+    Test *test = [[Test alloc] init];
+    
+    Test1 *t1 = [[Test1 alloc] init];
+    t1.name = @"成功了吗1";
+    test.str = @"t1";
+    
+    Test1 *t2 = [[Test1 alloc] init];
+    t2.name = @"成功了吗2";
+    
+    NSArray *arr = @[t1,t2];
+    arr.DPInternalClazz = @"Test1";
+    test.arr = arr;
+    
+    [test save];
+    
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {

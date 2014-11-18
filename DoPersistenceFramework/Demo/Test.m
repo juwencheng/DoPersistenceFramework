@@ -11,4 +11,15 @@
 
 @implementation Test
 
+- (instancetype)init
+{
+    _arr = [[NSArray alloc] init];
+    _arr.DPInternalClazz = @"Test1";
+    self = [super init];
+    if (self) {
+        
+    }
+    return self;
+}
+
 @end

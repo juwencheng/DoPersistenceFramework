@@ -17,5 +17,7 @@
 @property (nonatomic,strong) NSString *dbtype;
 //对应的对象类型
 @property (nonatomic,strong) NSString *obType;
+//用于记录集合类型里面对象的实际类型
+@property (nonatomic,strong) NSString *obInternalType;
 
 @end

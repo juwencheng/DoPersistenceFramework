@@ -28,6 +28,39 @@
         pk = -1;
         [[self class] buildMeta];
         classMeta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
+        if (!classMeta.buildRelation) {
+            for (DBMETAPROP *pMeta in classMeta.props) {
+                if (pMeta.transient) {
+                    /*
+                     要在运行时
+                     if ([pMeta.obType isEqualToString:@"ARRAY"]
+                     || [pMeta.obType isEqualToString:@"SET"]) {
+                     //一对多关系
+                     
+                     }
+                     */
+                    //创建相应的表格
+                    
+                    if(isNSArrayType(pMeta.obType)
+                       ||isNSSetType(pMeta.obType)){
+                        if (!pMeta.obInternalType) {
+                            NSArray *tmpArr = [self valueForKey:pMeta.propName];
+                            if ([tmpArr respondsToSelector:@selector(DPInternalClazz)]) {
+                                pMeta.obInternalType = tmpArr.DPInternalClazz;
+                                if (pMeta.obInternalType!=nil || ![pMeta.obInternalType isEqualToString:@""]) {
+                                    [classMeta.relation addObject:pMeta.obInternalType];
+                                }else{
+                                    NSLog(@"类 %@ 的属性 %@没有实现 DPInternalClazz 方法",classMeta.tablename,pMeta.propName);
+                                }
+                            }
+                            
+                        }
+                    }
+                    
+                }
+            }
+            classMeta.buildRelation = YES;
+        }
     }
     return self;
 }
@@ -37,7 +70,7 @@
     return pk;
 }
 
-- (void)setPK:(int)thePK
+- (void)setPK:(NSInteger)thePK
 {
     pk = thePK ;
 }
@@ -46,7 +79,6 @@
 {
     sqlite3 *db = [DPDBManager database];
     [[self class] doInternalSave:self database:db classMeta:classMeta];
-    NSLog(@"%d",pk);
 }
 
 - (NSError *)deleteMe
@@ -56,28 +88,69 @@
     }
     //关联删除
     sqlite3 *db = [DPDBManager database];
-    NSString *deleteSql = [NSString stringWithFormat:@"%@ WHERE pk = ?",classMeta.del];
+    [[self class] doInternalDeleteByPk:pk meta:classMeta fromDB:db];
     
-    sqlite3_stmt *stmt;
-    NSError *error;
-    if (sqlite3_prepare_v2(db, [deleteSql UTF8String], -1, &stmt, nil) == SQLITE_OK) {
-        sqlite3_bind_int(stmt, 1, pk);
-        if (sqlite3_step(stmt)!=SQLITE_DONE) {
-            error = [NSError errorWithDomain:@"com.jackdono" code:kDPDBDeleteError userInfo:@{@"error":[NSString stringWithFormat:@"删除错误 <%@>",deleteSql]}];
-        }
-    }else{
-        //sql error
-        error = [NSError errorWithDomain:@"com.jackdono" code:kDPDBDeleteSQLError userInfo:@{@"error":[NSString stringWithFormat:@"删除语法错误 <%@>",deleteSql]}];
+    return nil;
+}
+
++ (void)doInternalDeleteByPk:(NSInteger)pk
+                        meta:(DBMETA *)meta
+                      fromDB:(sqlite3 *)db
+{
+    if (pk < 0) {
+        return;
     }
     
-    sqlite3_finalize(stmt);
-    return error;
+    //关联删除
+    [self deleteRelationsByParentId:pk meta:meta fromDB:db];
+    
+    NSString *deleteSql = [NSString stringWithFormat:@"%@ WHERE pk = %lu",meta.del,(long)pk];
+    char *errmsg = NULL;
+    int result;
+    if ((result = sqlite3_exec(db, [deleteSql UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
+        NSLog(@"删除表%@中记录失败,PK : %lu  errorCode : %d",meta.tablename,pk,result);
+    }
+}
+
++ (void)deleteRelationsByParentId:(NSInteger)parentId
+                             meta:(DBMETA *)meta
+                           fromDB:(sqlite3 *)db
+{
+    char *errmsg = NULL;
+    int result ;
+    if (parentId < 0) {
+        for (NSString *relationTablename in meta.relation) {
+            
+            NSArray *relationModelPks = [self queryRelationsByParentId:parentId parentTablename:meta.tablename childTablename:relationTablename fromDB:db];
+            if ([NSClassFromString(relationTablename) isSubclassOfClass:[DPDBObject class]]) {
+                [NSClassFromString(relationTablename) deleteByPks:relationModelPks];
+            }
+            
+            NSString *insertRelation = [NSString stringWithFormat:@"delete from %@_%@ ",meta.tablename,relationTablename];
+            if ((result = sqlite3_exec(db, [insertRelation UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
+                NSLog(@"根据关联ID删除关系失败 : %@_%@  errorCode : %d",meta.tablename,relationTablename,result);
+            }else{
+                NSLog(@"根据关联ID删除关系成功表: %@_%@ ",meta.tablename,relationTablename);
+            }
+        }
+    }else{
+        for (NSString *relationTablename in meta.relation) {
+            NSString *insertRelation = [NSString stringWithFormat:@"delete from %@_%@ where parent_id = %ld",meta.tablename,relationTablename,(long)parentId];
+            if ((result = sqlite3_exec(db, [insertRelation UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
+                NSLog(@"根据关联ID删除关系失败 : %@_%@  errorCode : %d",meta.tablename,relationTablename,result);
+            }else{
+                NSLog(@"根据关联ID删除关系成功表: %@_%@ ",meta.tablename,relationTablename);
+            }
+        }
+    }
+    
 }
 
 //核心是遍历
 //构建tableview的元信息
 + (void)buildMeta
 {
+    static BOOL refTableCreateFlag = NO;
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
     if (meta) {
         return;
@@ -172,11 +245,13 @@
              }
              */
             //创建相应的表格
-            if(![pMeta.obType isEqualToString:@"ARRAY"]
-               &&![pMeta.obType isEqualToString:@"SET"]){
+            if(isNSArrayType(pMeta.obType)
+               ||isNSSetType(pMeta.obType)){
+                
+            }else {
                 Class clazz = NSClassFromString(pMeta.obType);
                 if ([clazz isSubclassOfClass:[DPDBObject class]]) {
-                    //一对一关系
+                    //创建关系表
                     NSString *refInsert = [NSString stringWithFormat:@"create table if not exists %@_%@ (pk integer  auto_increment primary key, parent_id integer, child_id integer);",meta.tablename,pMeta.obType];
 //                    NSLog(@"%@",refInsert);
                     //执行create
@@ -188,6 +263,23 @@
                     }else{
                         NSLog(@"表: %@_%@ 创建成功",meta.tablename,pMeta.obType);
                     }
+                    
+                    
+                    [meta.relation addObject:pMeta.obType];
+                }else{
+                    //创建关系关联表
+                    if (!refTableCreateFlag) {
+                        refTableCreateFlag = !refTableCreateFlag;
+                        NSString *createRefTable = [NSString stringWithFormat:@"create table if not exists tableRelation (tablename TEXT, relationtablename TEXT)"];
+                        sqlite3 *db = [DPDBManager database];
+                        char *errmsg = NULL;
+                        int result ;
+                        if ((result = sqlite3_exec(db, [createRefTable UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
+                            NSLog(@"创建失败关联表");
+                        }else{
+                            NSLog(@"创建成功关联表");
+                        }
+                    }
                 }
             }
         }
@@ -198,7 +290,7 @@
     meta.query = [NSString stringWithFormat:@"select pk , %@ from %@",[ins substringToIndex:(ins.length-1)],meta.tablename];
     meta.del = [NSString stringWithFormat:@"delete from %@",meta.tablename];
     
-    [[[DPDBManager singleton] metaInfos] setObject:meta forKey:meta.tablename];
+    
     
     //执行SQL
     char *errmsg = NULL;
@@ -212,6 +304,26 @@
     if (sqlite3_exec(db, [addSequenceSQL UTF8String], NULL, NULL, &errmsg)!=SQLITE_OK) {
         NSLog(@"初始化%@的pkseq失败",meta.tablename);
     }
+    
+    
+    sqlite3_stmt *stmt;
+    NSMutableSet *relation = [NSMutableSet set];
+    if (sqlite3_prepare_v2(db, [[NSString stringWithFormat:@"select relationtablename from tableRelation where tablename = '%@'",meta.tablename] UTF8String], -1, &stmt, nil) == SQLITE_OK) {
+        int ret ;
+        while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
+            const char *relationTable = (char *)sqlite3_column_text(stmt, 0);
+            if (relationTable!=NULL) {
+                [relation addObject:[NSString stringWithUTF8String:relationTable]];
+            }
+        }
+    }
+    
+#warning 应该和目前的进行比较，如果有改动就进行删除操作
+    [meta.relation intersectSet:relation];
+    
+    
+    
+    [[[DPDBManager singleton] metaInfos] setObject:meta forKey:meta.tablename];
 }
 
 + (DPDBObject *)queryByPk:(NSInteger)pk
@@ -221,11 +333,11 @@
     }
     id model ;
     
-    [self buildMeta];
+    [self buildAndCheckMeta];
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
     
-    NSString *query = [meta.query stringByAppendingFormat:@" where pk = %d",pk];
+    NSString *query = [meta.query stringByAppendingFormat:@" where pk = %ld",(long)pk];
     NSArray *result = [self doInternalQuery:query database:db classMeta:meta];
     if (result.count >= 1) {
         model = result[0];
@@ -249,11 +361,11 @@
             NSString *type;
             NSString *name;
             int position = 0;
-            DBMETAPROP *prop ;
+            DBMETAPROP *prop;
             //            [model setValue:[NSNumber numberWithInt:sqlite3_column_int(stmt, position++)] forKey:@"pk"];
             NSInteger thePk =sqlite3_column_int(stmt, position++);
             [model setPK:thePk];
-            for (int i=0,len=props.count; i<len; i++) {
+            for (long i=0,len=props.count; i<len; i++) {
                 prop = props[i];
                 name = prop.propName;
                 type = prop.dbtype;
@@ -276,31 +388,99 @@
                     }
                 }else{
                     if (isCollectionType(prop.obType)) {
-                        
-                    }else if([NSClassFromString(prop.obType) isSubclassOfClass:[DPDBObject class]]){
-                        NSString *queryRelation = [NSString stringWithFormat:@"select child_id from %@_%@ where parent_id = %ld",meta.tablename,prop.obType,(long)thePk];
-                        NSInteger refPk = 0;
-                        sqlite3_stmt *refStmt;
-                        if (sqlite3_prepare_v2(db, [queryRelation UTF8String], -1, &refStmt, nil) == SQLITE_OK) {
-                            while (sqlite3_step(refStmt) == SQLITE_ROW) {
-                                refPk =sqlite3_column_int(refStmt, 0);
+                        if (isNSArrayType(prop.obType)) {
+                            if (!prop.obInternalType) {
+                                NSArray *tmpArr = [model valueForKey:prop.propName];
+                                if ([tmpArr respondsToSelector:@selector(DPInternalClazz)]) {
+                                    prop.obInternalType = tmpArr.DPInternalClazz;
+                                    if (!prop.obInternalType) {
+                                        [meta.relation addObject:prop.obInternalType];
+                                    }
+                                }
+                                
+                            }
+                            if (!prop.obInternalType) {
+                                NSLog(@"类%@中的属性 %@ 没有设置迭代元素的类类型",meta.tablename,prop.propName);
+                            }else{
+                                NSArray *relationModelPks = [self queryRelationsByParentId:thePk parentTablename:meta.tablename childTablename:prop.obInternalType fromDB:db];
+                                NSMutableArray *propValue = [NSMutableArray array];
+                                if (relationModelPks.count > 0) {
+                                    for (NSNumber *number in relationModelPks) {
+                                        id refModel = [NSClassFromString(prop.obInternalType) queryByPk:[number integerValue]];
+                                        [propValue addObject:refModel];
+                                    }
+                                    [model setValue:propValue forKey:prop.propName];
+                                }
+                            }
+                            
+                        }else if (isNSSetType(prop.obType)){
+                            if (!prop.obInternalType) {
+                                NSSet *tmpSet = [model valueForKey:prop.propName];
+                                if ([tmpSet respondsToSelector:@selector(DPInternalClazz)]) {
+                                    prop.obInternalType = tmpSet.DPInternalClazz;
+                                    if (!prop.obInternalType) {
+                                        [meta.relation addObject:prop.obInternalType];
+                                    }
+                                }
+                            }
+                            if (!prop.obInternalType) {
+                                NSLog(@"类%@中的属性 %@ 没有设置迭代元素的类类型",meta.tablename,prop.propName);
+                            }else{
+                                NSArray *relationModelPks = [self queryRelationsByParentId:thePk parentTablename:meta.tablename childTablename:prop.obInternalType fromDB:db];
+                                NSMutableArray *propValue = [NSMutableArray array];
+                                if (relationModelPks.count > 0) {
+                                    for (NSNumber *number in relationModelPks) {
+                                        id refModel = [NSClassFromString(prop.obInternalType) queryByPk:[number integerValue]];
+                                        [propValue addObject:refModel];
+                                    }
+                                    [model setValue:[NSSet setWithArray:propValue] forKey:prop.propName];
+                                }
                             }
                         }
-                        //直接忽略查出多条数据的情况
-                        if (refPk != 0) {
-                            id refModel = [NSClassFromString(prop.obType) queryByPk:refPk];
-                            [model setValue:refModel forKey:prop.propName];
+                    }else if([NSClassFromString(prop.obType) isSubclassOfClass:[DPDBObject class]]){
+                        NSInteger refPk = 0;
+                        NSArray *relationModelPks = [self queryRelationsByParentId:thePk parentTablename:meta.tablename childTablename:prop.obType fromDB:db];
+                        if (relationModelPks.count > 0) {
+                            refPk = [relationModelPks[0] integerValue];
+                            if (refPk != 0) {
+                                id refModel = [NSClassFromString(prop.obType) queryByPk:refPk];
+                                [model setValue:refModel forKey:prop.propName];
+                            }
                         }
-                        sqlite3_finalize(refStmt);
                     }
                 }
-               
             }
             [result addObject:model];
         }
     }
     sqlite3_finalize(stmt);
     return result;
+}
+
++ (NSArray *)queryRelationsByParentId:(NSInteger)parentId
+                      parentTablename:(NSString *)parentTablename
+                       childTablename:(NSString *)childTableName
+                               fromDB:(sqlite3*)db
+{
+    NSMutableArray *relations = [NSMutableArray array];
+    NSString *queryRelation;
+    if (parentId < 0) {
+        queryRelation = [NSString stringWithFormat:@"select child_id from %@_%@",parentTablename,childTableName];
+    }else{
+        queryRelation = [NSString stringWithFormat:@"select child_id from %@_%@ where parent_id = %ld",parentTablename,childTableName,(long)parentId];
+    }
+    
+    NSInteger refPk = 0;
+    sqlite3_stmt *refStmt;
+    if (sqlite3_prepare_v2(db, [queryRelation UTF8String], -1, &refStmt, nil) == SQLITE_OK) {
+        while (sqlite3_step(refStmt) == SQLITE_ROW) {
+            refPk =sqlite3_column_int(refStmt, 0);
+            [relations addObject:[NSNumber numberWithInteger:refPk]];
+        }
+    }
+    
+    sqlite3_finalize(refStmt);
+    return relations;
 }
 
 + (NSArray *)queryByPks:(NSArray *)pks
@@ -310,14 +490,14 @@
     }
     NSMutableArray *models = [NSMutableArray array];
 
-    [self buildMeta];
+    [self buildAndCheckMeta];
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
     NSString *query;
     NSInteger pk;
-    for (int i = 0, len = pks.count; i < len; i++) {
+    for (long i = 0, len = pks.count; i < len; i++) {
         pk = [pks[i] integerValue];
-        query = [meta.query stringByAppendingFormat:@" where pk = %d",pk];
+        query = [meta.query stringByAppendingFormat:@" where pk = %ld",(long)pk];
         [models addObjectsFromArray:[self doInternalQuery:query database:db classMeta:meta]];
     }
     
@@ -326,7 +506,7 @@
 
 + (NSArray *)allObjects
 {
-    [self buildMeta];
+    [self buildAndCheckMeta];
     NSArray *result;
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
@@ -338,11 +518,15 @@
 
 + (void)deleteAll
 {
-    [self buildMeta];
+    [self buildAndCheckMeta];
     char *errmsg = NULL;
     int result ;
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
+    
+    
+    [self deleteRelationsByParentId:-1 meta:meta fromDB:db];
+    
     if ((result = sqlite3_exec(db, [meta.del UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
         NSLog(@"删除全部失败");
     }else{
@@ -350,9 +534,19 @@
     }
 }
 
++ (void)deleteByPks:(NSArray *)pks
+{
+    [self buildAndCheckMeta];
+    sqlite3 *db = [DPDBManager database];
+    DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
+    for (NSNumber *pk in pks) {
+        [self doInternalDeleteByPk:[pk integerValue] meta:meta fromDB:db];
+    }
+}
+
 + (void)saveObjects:(NSArray *)models
 {
-    [self buildMeta];
+    [self buildAndCheckMeta];
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
     for (id model in models) {
@@ -374,12 +568,12 @@
             DBMETAPROP *prop;
             NSArray *properties = meta.props;
             int position = 1;
-            sqlite3_bind_int(stmt, position++, pk);
-            for (int i=0,len=properties.count; i<len; i++) {
+            sqlite3_bind_int64(stmt, position++, pk);
+            for (long i=0,len=properties.count; i<len; i++) {
                 prop = properties[i];
+                name = prop.propName;
+                type = prop.dbtype;
                 if (!prop.transient) {
-                    name = prop.propName;
-                    type = prop.dbtype;
                     if (type != nil) {
                         if ([[type lowercaseString] isEqualToString:@"integer"]) {
                             sqlite3_bind_int(stmt, position, [[model valueForKey:name] intValue]);
@@ -397,13 +591,26 @@
                     }
                 }else{
                     
-                    //                    NSLog(@"暂时未实现集合和对象类型");
+                    //NSLog(@"暂时未实现集合和对象类型");
                     if (isCollectionType(prop.obType)) {
-                        NSLog(@"集合类型");
-                        //集合不为空
-                        if([model valueForKey:name]!=nil){
-                            
+                        if (!isNSDictionaryType(prop.obType)) {
+                            //集合不为空
+                            NSArray *refModels = [model valueForKey:name];
+                            if(refModels!=nil && refModels.count > 0){
+                                DPDBObject *m = refModels[0];
+                                if ([m isKindOfClass:[DPDBObject class]]) {
+                                    [[m class] saveObjects:refModels];
+                                    NSString *childTableName = NSStringFromClass([m class]);
+                                    for (DPDBObject *model in refModels) {
+                                        [self createRelationWithParentId:pk parentTablename:meta.tablename relationId:[model pk] relationTablename:childTableName toDB:db];
+                                    }
+                                    if (prop.obInternalType==nil) {
+                                        prop.obInternalType = childTableName;
+                                    }
+                                }
+                            }
                         }
+                        
                     }else if ([NSClassFromString(prop.obType) isSubclassOfClass:[DPDBObject class]]){
                         DPDBObject *subModel = [model valueForKey:prop.propName];
                         if (subModel) {
@@ -412,18 +619,10 @@
                             //再保存对象
                             [subModel save];
                             NSInteger refSeq = [subModel pk];
-                            char *errmsg = NULL;
-                            int result ;
-                            NSString *updateRelation = [NSString stringWithFormat:@"insert into %@_%@(parent_id,child_id) values(%d,%d)",meta.tablename,prop.obType,pk,refSeq];
-                            if ((result = sqlite3_exec(db, [updateRelation UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
-                                NSLog(@"更新关系失败 : %@_%@  errorCode : %d",meta.tablename,prop.obType,result);
-                            }else{
-                                NSLog(@"更新关系成功表: %@_%@ ",meta.tablename,prop.obType);
-                            }
+                            [self createRelationWithParentId:pk parentTablename:meta.tablename relationId:refSeq relationTablename:prop.obType toDB:db];
                         }
                     }
                 }
-                
             }
             if (sqlite3_step(stmt) != SQLITE_DONE) {
                 err = [NSError errorWithDomain:kDPDBErrorDomain code:kDPDBInsertDataBindError userInfo:@{@"error":@"SQL绑定数据错误，请检查"}];
@@ -434,6 +633,22 @@
         }
     }else{
         
+    }
+}
+
++ (void)createRelationWithParentId:(NSInteger)parentId
+                   parentTablename:(NSString *)parentTablename
+                        relationId:(NSInteger)relationId
+                 relationTablename:(NSString *)relationTablename
+                              toDB:(sqlite3 *)db
+{
+    char *errmsg = NULL;
+    int result ;
+    NSString *insertRelation = [NSString stringWithFormat:@"insert into %@_%@ (parent_id,child_id) values(%ld,%ld)",parentTablename,relationTablename,(long)parentId,(long)relationId];
+    if ((result = sqlite3_exec(db, [insertRelation UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
+        NSLog(@"更新关系失败 : %@_%@  errorCode : %d",parentTablename,relationTablename,result);
+    }else{
+        NSLog(@"更新关系成功表: %@_%@ ",parentTablename,relationTablename);
     }
 }
 
@@ -473,11 +688,11 @@
 
 + (void)syncSeq:(NSInteger)seq
 {
-    [[self class] buildMeta];
+    [self  buildAndCheckMeta];
     sqlite3 *db = [DPDBManager database];
     
     char *errmsg = NULL;
-    NSString *pkIncSQL = [NSString stringWithFormat:@"UPDATE PKSEQ SET SEQ=%d WHERE NAME='%@'",seq,NSStringFromClass([self class])];
+    NSString *pkIncSQL = [NSString stringWithFormat:@"UPDATE PKSEQ SET SEQ=%ld WHERE NAME='%@'",(long)seq,NSStringFromClass([self class])];
     if (sqlite3_exec(db, [pkIncSQL UTF8String], NULL, NULL, &errmsg)) {
         NSLog(@"增加%@的主键失败!",NSStringFromClass([self class]));
     }
@@ -485,16 +700,24 @@
     sqlite3_free(errmsg);
 }
 
++ (void)buildAndCheckMeta
+{
+    [[self class] buildMeta];
+    DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
+    if (!meta.buildRelation) {
+        [[[self class] alloc] init];
+    }
+}
+
 
 //查询当前类的序列号
 + (NSInteger)currentSeq
 {
-    [self buildMeta];
+    [self buildAndCheckMeta];
     NSInteger pk = 1;
     sqlite3 *db = [DPDBManager database];
     sqlite3_stmt *stmt;
     
-//    @"SELECT SEQ FROM PKSEQ WHERE NAME = '%@'"
     NSMutableString *query = [NSMutableString stringWithFormat:@"SELECT max(pk) from '%@'",NSStringFromClass([self class])];
     if (sqlite3_prepare_v2(db, [query UTF8String], -1, &stmt, nil) == SQLITE_OK) {
         if (sqlite3_step(stmt) == SQLITE_ROW) {

@@ -13,9 +13,6 @@
 
 @property (nonatomic,strong) NSString *str;
 @property (nonatomic,strong) NSArray  *arr;
-@property (nonatomic,strong) NSMutableArray *mArr;
-@property (nonatomic,strong) NSDictionary *dic;
-@property (nonatomic,strong) NSMutableArray *mDic;
 @property (nonatomic)        NSInteger    aNumber;
 @property (nonatomic)        int          aInt;
 @property (nonatomic)        float        aFloat;

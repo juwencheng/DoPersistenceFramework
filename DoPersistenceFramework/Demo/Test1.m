@@ -10,4 +10,12 @@
 
 @implementation Test1
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+    }
+    return self;
+}
+
 @end

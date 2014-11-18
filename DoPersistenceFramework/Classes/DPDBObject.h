@@ -7,6 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "NSArray+DPModelExtention.h"
+#import "NSSet+DPModelExtention.h"
+#import "ExtendNSLogFunctionality.h"
 
 #define isCollectionType(x) (isNSSetType(x) || isNSArrayType(x) || isNSDictionaryType(x))
 #define isNSArrayType(x) ([x isEqualToString:@"NSArray"] || [x isEqualToString:@"NSMutableArray"])
@@ -25,9 +28,15 @@
 
 //+ (DPDBObject *)queryByPk:(NSInteger)pk;
 
++ (void)saveObjects:(NSArray *)models;
+
++ (DPDBObject *)queryByPk:(NSInteger)pk;
+
 + (NSArray *)allObjects;
 
 + (void)deleteAll;
+
++ (void)deleteByPks:(NSArray *)pks;
 
 + (void)syncSeq:(NSInteger)seq;
 

@@ -10,4 +10,13 @@
 
 @implementation DBMETA
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _relation = [NSMutableSet set];
+    }
+    return self;
+}
+
 @end

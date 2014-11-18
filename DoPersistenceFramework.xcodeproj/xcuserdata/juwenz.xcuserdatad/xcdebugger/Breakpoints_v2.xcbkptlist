@@ -6,16 +6,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoPersistenceFramework/Classes/DPDBObject.m"
-            timestampString = "437023705.946301"
+            timestampString = "437923587.706152"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "319"
-            endingLineNumber = "319"
-            landmarkName = "+doInternalQuery:database:classMeta:"
+            startingLineNumber = "549"
+            endingLineNumber = "549"
+            landmarkName = "+saveObjects:"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -26,43 +26,61 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoPersistenceFramework/Classes/DPDBObject.m"
-            timestampString = "437023705.946301"
+            timestampString = "437923617.419666"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "351"
-            endingLineNumber = "351"
-            landmarkName = "+doInternalQuery:database:classMeta:"
+            startingLineNumber = "562"
+            endingLineNumber = "562"
+            landmarkName = "+doInternalSave:database:classMeta:"
             landmarkType = "5">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "+[DPDBObject doInternalQuery:database:classMeta:]"
-                  moduleName = "DoPersistenceFramework"
-                  urlString = "file:///Users/juwenz/projects/%E5%AE%9E%E9%AA%8C%E5%AE%A4/DoPersistenceFramework/DoPersistenceFramework/Classes/DPDBObject.m"
-                  timestampString = "437023391.263684"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "350"
-                  endingLineNumber = "350"
-                  offsetFromSymbolStart = "2751">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "+[DPDBObject doInternalQuery:database:classMeta:]"
-                  moduleName = "DoPersistenceFramework"
-                  urlString = "file:///Users/juwenz/projects/%E5%AE%9E%E9%AA%8C%E5%AE%A4/DoPersistenceFramework/DoPersistenceFramework/Classes/DPDBObject.m"
-                  timestampString = "437023391.263925"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "350"
-                  endingLineNumber = "350"
-                  offsetFromSymbolStart = "2756">
-               </Location>
-            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoPersistenceFramework/Classes/DPDBObject.m"
+            timestampString = "437923678.801806"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "722"
+            endingLineNumber = "722"
+            landmarkName = "+currentSeq"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoPersistenceFramework/Classes/DPDBManager.m"
+            timestampString = "437923763.13447"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "100"
+            endingLineNumber = "100"
+            landmarkName = "-seqWithClazz:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoPersistenceFramework/Classes/&#x7c7b;&#x522b;/NSDictionary+KeyExtend.m"
+            timestampString = "437923984.60196"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "15"
+            endingLineNumber = "15"
+            landmarkName = "-hasKey:"
+            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

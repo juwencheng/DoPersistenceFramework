@@ -10,4 +10,5 @@
 #import "DPDBObject.h"
 @interface Test1 : DPDBObject
 @property (nonatomic,strong) NSString *name;
+//@property (nonatomic,strong) NSArray *ar;
 @end

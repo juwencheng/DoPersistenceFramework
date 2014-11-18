@@ -133,7 +133,6 @@
 
 - (void)loadPkInfo:(NSNotification *)notification
 {
-    NSLog(@"loadPkInfo");
     NSArray *classnameCollection = primaryKeyIndexs.allKeys;
     for (NSString *classname in classnameCollection) {
         Class clazz = NSClassFromString(classname);
