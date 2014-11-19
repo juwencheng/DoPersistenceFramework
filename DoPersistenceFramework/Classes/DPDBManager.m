@@ -66,7 +66,7 @@
     if (first || database == NULL) {
         //        NSLog(@"database open");
         if (!dbPath) {
-            dbPath = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:@"database.db"];
+            dbPath = [[NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0] stringByAppendingPathComponent:@"database.db"];
             NSLog(@"%@",dbPath);
             if (![fileMgr fileExistsAtPath:dbPath]) {
                 [fileMgr createFileAtPath:dbPath contents:nil attributes:nil];
