@@ -19,9 +19,13 @@
 #define kDPDBDeleteSQLError 120
 #define kDPDBDeleteDataBindError 121
 
-#define kPDDBQueryError 13
-#define kPDDBQuerySQLError 130
-#define kPDDBQueryDataBindError 131
+#define kDPDBUpdateError 13
+#define kDPDBUpdateSQLError 130
+#define kDPDBUpdateDataBindError 131
+
+#define kPDDBQueryError 14
+#define kPDDBQuerySQLError 140
+#define kPDDBQueryDataBindError 141
 
 
 #endif

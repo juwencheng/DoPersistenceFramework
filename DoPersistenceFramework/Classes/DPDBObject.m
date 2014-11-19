@@ -233,7 +233,7 @@
             [create appendString:[NSString stringWithFormat:@"%@ %@ ,",pMeta.propName,pMeta.dbtype]];
             [ins appendString:[NSString stringWithFormat:@"%@ ,",pMeta.propName]];
             [ins_1 appendString:[NSString stringWithFormat:@" ? ,"]];
-            [update appendString:[NSString stringWithFormat:@"set %@ = ?,",pMeta.propName]];
+            [update appendString:[NSString stringWithFormat:@" %@ = ?,",pMeta.propName]];
         }
         else{
             /*
@@ -286,7 +286,7 @@
     }
     meta.insert = [NSString stringWithFormat:@"insert into %@ (pk,%@ ) values (? ,%@ )",meta.tablename,[ins substringToIndex:(ins.length-1)],[ins_1 substringToIndex:(ins_1.length-1)]];
     meta.create = [NSString stringWithFormat:@"create table if not exists %@ (pk integer primary key , %@ )",meta.tablename,[create substringToIndex:create.length-1]];
-    meta.update = [NSString stringWithFormat:@"update %@ %@ where pk = ?",meta.tablename,[update substringToIndex:update.length-1]];
+    meta.update = [NSString stringWithFormat:@"update %@ set %@ where pk = ?",meta.tablename,[update substringToIndex:update.length-1]];
     meta.query = [NSString stringWithFormat:@"select pk , %@ from %@",[ins substringToIndex:(ins.length-1)],meta.tablename];
     meta.del = [NSString stringWithFormat:@"delete from %@",meta.tablename];
     
@@ -596,21 +596,26 @@
                         if (!isNSDictionaryType(prop.obType)) {
                             //集合不为空
                             NSArray *refModels = [model valueForKey:name];
-                            if(refModels!=nil && refModels.count > 0){
-                                DPDBObject *m = refModels[0];
-                                if ([m isKindOfClass:[DPDBObject class]]) {
-                                    [[m class] saveObjects:refModels];
-                                    NSString *childTableName = NSStringFromClass([m class]);
-                                    for (DPDBObject *model in refModels) {
-                                        [self createRelationWithParentId:pk parentTablename:meta.tablename relationId:[model pk] relationTablename:childTableName toDB:db];
-                                    }
-                                    if (prop.obInternalType==nil) {
-                                        prop.obInternalType = childTableName;
+                            if (refModels.DPInternalClazz
+                                && ![refModels.DPInternalClazz isEqualToString:@""]) {
+                                Class itemModelClazz = NSClassFromString(refModels.DPInternalClazz);
+                                if ([itemModelClazz isSubclassOfClass:[DPDBObject class]]) {
+                                    if(refModels!=nil && refModels.count > 0){
+                                        
+                                        [itemModelClazz saveObjects:refModels];
+                                        NSString *childTableName = refModels.DPInternalClazz;
+                                        for (DPDBObject *model in refModels) {
+                                            [self createRelationWithParentId:pk parentTablename:meta.tablename relationId:[model pk] relationTablename:childTableName toDB:db];
+                                        }
+                                        if (prop.obInternalType == nil) {
+                                            prop.obInternalType = childTableName;
+                                        }
                                     }
                                 }
+                            }else{
+                                //不做任何处理，即为transient类型
                             }
                         }
-                        
                     }else if ([NSClassFromString(prop.obType) isSubclassOfClass:[DPDBObject class]]){
                         DPDBObject *subModel = [model valueForKey:prop.propName];
                         if (subModel) {
@@ -632,7 +637,86 @@
             err = [NSError errorWithDomain:kDPDBErrorDomain code:kDPDBInsertSQLError userInfo:@{@"error":[NSString stringWithFormat: @"插入语句 <%@> 错误，请检查",meta.insert]}];
         }
     }else{
-        
+        if (sqlite3_prepare_v2(db, [meta.update UTF8String], -1, &stmt, nil) == SQLITE_OK) {
+            NSString *type;
+            NSString *name;
+            DBMETAPROP *prop;
+            NSArray *properties = meta.props;
+            int position = 1;
+            
+            for (long i=0,len=properties.count; i<len; i++) {
+                prop = properties[i];
+                name = prop.propName;
+                type = prop.dbtype;
+                if (!prop.transient) {
+                    if (type != nil) {
+                        if ([[type lowercaseString] isEqualToString:@"integer"]) {
+                            sqlite3_bind_int(stmt, position, [[model valueForKey:name] intValue]);
+                        }else if([[type lowercaseString]isEqualToString:@"double"]
+                                 || [[type lowercaseString] isEqualToString:@"float"]
+                                 || [[type lowercaseString]isEqualToString:@"real"]){
+                            sqlite3_bind_double(stmt, position, [[model valueForKey:name] doubleValue]);
+                        }else if([[type lowercaseString] isEqualToString:@"text"]){
+                            sqlite3_bind_text(stmt, position, [[model valueForKey:name] UTF8String], -1, NULL);
+                        }
+                        else{
+                            NSLog(@"%@ 类型暂未实现",type);
+                        }
+                        position ++;
+                    }
+                }else{
+                    if (isCollectionType(prop.obType)) {
+                        if (!isNSDictionaryType(prop.obType)) {
+                            //集合不为空
+                            NSArray *refModels = [model valueForKey:name];
+                            if (refModels.DPInternalClazz
+                                && ![refModels.DPInternalClazz isEqualToString:@""]) {
+                                Class itemModelClazz = NSClassFromString(refModels.DPInternalClazz);
+                                if ([itemModelClazz isSubclassOfClass:[DPDBObject class]]) {
+                                    NSMutableArray *newRecords = [NSMutableArray array];
+                                    for (DPDBObject *model in refModels) {
+                                        if ([model pk] < 0) {
+                                            [newRecords addObject:model];
+                                        }
+                                    }
+                                    if(refModels!=nil && refModels.count > 0){
+                                        [itemModelClazz saveObjects:refModels];
+                                        NSString *childTableName = refModels.DPInternalClazz;
+                                        for (DPDBObject *model in newRecords) {
+                                            [self createRelationWithParentId:pk parentTablename:meta.tablename relationId:[model pk] relationTablename:childTableName toDB:db];
+                                        }
+                                        if (prop.obInternalType==nil) {
+                                            prop.obInternalType = childTableName;
+                                        }
+                                    }
+                                }
+                            }else{
+                                //不做任何处理，即为transient类型
+                            }
+                        }else{
+                            NSLog(@"NSDictionary暂时没有实现");
+                        }
+                    }else if ([NSClassFromString(prop.obType) isSubclassOfClass:[DPDBObject class]]){
+                        DPDBObject *subModel = [model valueForKey:prop.propName];
+                        if (subModel) {
+                            //先保存关系
+                            //@"create table if not exists %@_%@ (pk integer  auto_increment primary key, parent_id integer, child_id integer)"
+                            //再保存对象
+                            [subModel save];
+                            NSInteger refSeq = [subModel pk];
+                            [self createRelationWithParentId:pk parentTablename:meta.tablename relationId:refSeq relationTablename:prop.obType toDB:db];
+                        }
+                    }
+                }
+            }
+            sqlite3_bind_int64(stmt, position++, pk);
+            if (sqlite3_step(stmt) != SQLITE_DONE) {
+                err = [NSError errorWithDomain:kDPDBErrorDomain code:kDPDBUpdateDataBindError userInfo:@{@"error":@"SQL绑定数据错误，请检查"}];
+            }
+            sqlite3_finalize(stmt);
+        }else{
+            err = [NSError errorWithDomain:kDPDBErrorDomain code:kDPDBInsertSQLError userInfo:@{@"error":[NSString stringWithFormat: @"更新语句 <%@> 错误，请检查",meta.insert]}];
+        }
     }
 }
 

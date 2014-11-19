@@ -23,12 +23,13 @@
     
     
 //    [Test1 deleteAll];
-    [self addRelationObjects];
+//    [self addRelationObjects];
+    [self testUpdateRelation];
     
 //    [NSThread sleepForTimeInterval:1];
     
-    [Test deleteAll];
-    NSLog(@"%d",[Test1 allObjects].count);
+//    [Test deleteAll];
+//    NSLog(@"%d",[Test1 allObjects].count);
 //    NSAssert([Test allObjects].count == 0, @"成功");
 //    NSAssert([Test1 allObjects].count == 0,@"成功");
 
@@ -42,7 +43,7 @@
 - (void)addRelationObjects
 {
     Test *test = [[Test alloc] init];
-    
+    test.str = @"test";
     Test1 *t1 = [[Test1 alloc] init];
     t1.name = @"成功了吗1";
     test.str = @"t1";
@@ -56,6 +57,40 @@
     
     [test save];
     
+}
+
+- (void)testUpdate
+{
+    Test1 *t1 = [[Test1 alloc] init];
+    t1.name = @"before";
+    [t1 save];
+    
+    t1.name = @"are you sure?";
+    [t1 save];
+    
+    Test1 *updateT1 = [[Test1 allObjects] lastObject];
+    NSLog(@"%@",updateT1.name);
+}
+
+- (void)testUpdateRelation
+{
+    Test *test = [[Test alloc] init];
+    test.str = @"test";
+    Test1 *t1 = [[Test1 alloc] init];
+    t1.name = @"成功了吗1";
+    test.str = @"t1";
+    
+    NSArray *arr = @[t1];
+    arr.DPInternalClazz = NSStringFromClass([Test1 class]);
+    test.arr = arr;
+    [test save];
+    
+    t1.name = @"Test1 update";
+    test.str = @"Test update";
+    [test save];
+    
+    Test *updateTest = [[Test allObjects] lastObject];
+    NSLog(@"%@",updateTest.str);
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
