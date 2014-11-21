@@ -28,6 +28,9 @@
 
 //+ (DPDBObject *)queryByPk:(NSInteger)pk;
 
+//用于一对多关系的对象保存时提供集合类型保存的对象类型
++ (NSDictionary *)collectionTypeInfo;
+
 + (void)saveObjects:(NSArray *)models;
 
 + (DPDBObject *)queryByPk:(NSInteger)pk;

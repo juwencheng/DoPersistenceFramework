@@ -53,6 +53,11 @@
     if ((result = sqlite3_exec(db, [@"CREATE TABLE IF NOT EXISTS PKSEQ (name varchar(50) PRIMARY KEY,SEQ INTEGER)" UTF8String], NULL, NULL, &errmsg)) != SQLITE_OK) {
         NSLog(@"创建序列表错误:%s 错误代码:%d",errmsg,result);
     }
+    
+    //创建关系记录表
+    if ((result = sqlite3_exec(db, [@"CREATE TABLE IF NOT EXISTS tableRelation (pk integer auto_increment primary key , tablename varchar(50) , relationtablename varchar(50))" UTF8String], NULL, NULL, &errmsg))) {
+        NSLog(@"创建关系记录表错误:%s 错误代码:%d",errmsg,result);
+    }
 }
 
 + (sqlite3 *)database

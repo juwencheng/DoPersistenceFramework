@@ -12,6 +12,7 @@
 @interface Test : DPDBObject
 
 @property (nonatomic,strong) NSString *str;
+//@property (nonatomic,strong) NSString *addStr;
 @property (nonatomic,strong) NSArray  *arr;
 @property (nonatomic)        NSInteger    aNumber;
 @property (nonatomic)        int          aInt;

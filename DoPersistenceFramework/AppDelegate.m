@@ -24,11 +24,11 @@
     
 //    [Test1 deleteAll];
 //    [self addRelationObjects];
-    [self testUpdateRelation];
+//    [self testUpdateRelation];
     
 //    [NSThread sleepForTimeInterval:1];
     
-//    [Test deleteAll];
+    [Test deleteAll];
 //    NSLog(@"%d",[Test1 allObjects].count);
 //    NSAssert([Test allObjects].count == 0, @"成功");
 //    NSAssert([Test1 allObjects].count == 0,@"成功");
@@ -52,7 +52,6 @@
     t2.name = @"成功了吗2";
     
     NSArray *arr = @[t1,t2];
-    arr.DPInternalClazz = @"Test1";
     test.arr = arr;
     
     [test save];

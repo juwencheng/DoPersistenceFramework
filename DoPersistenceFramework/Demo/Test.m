@@ -13,13 +13,19 @@
 
 - (instancetype)init
 {
-    _arr = [[NSArray alloc] init];
-    _arr.DPInternalClazz = @"Test1";
     self = [super init];
     if (self) {
         
     }
     return self;
+}
+
++ (NSDictionary *)collectionTypeInfo
+{
+    return
+    @{
+         @"arr":NSStringFromClass([Test1 class])
+    };
 }
 
 @end

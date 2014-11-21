@@ -28,17 +28,10 @@
         pk = -1;
         [[self class] buildMeta];
         classMeta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
+        /*
         if (!classMeta.buildRelation) {
             for (DBMETAPROP *pMeta in classMeta.props) {
                 if (pMeta.transient) {
-                    /*
-                     要在运行时
-                     if ([pMeta.obType isEqualToString:@"ARRAY"]
-                     || [pMeta.obType isEqualToString:@"SET"]) {
-                     //一对多关系
-                     
-                     }
-                     */
                     //创建相应的表格
                     
                     if(isNSArrayType(pMeta.obType)
@@ -60,7 +53,8 @@
                 }
             }
             classMeta.buildRelation = YES;
-        }
+        }*/
+
     }
     return self;
 }
@@ -150,14 +144,16 @@
 //构建tableview的元信息
 + (void)buildMeta
 {
-    static BOOL refTableCreateFlag = NO;
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
     if (meta) {
         return;
     }
     
     meta = [[DBMETA alloc] init];
+    
     meta.tablename = NSStringFromClass([self class]);
+    meta.relation = [NSMutableSet set];
+    
     
     NSDictionary *d = [self classPropertiesWithType];
     
@@ -227,60 +223,36 @@
     NSMutableString *ins_1 = [NSMutableString string];
     NSMutableString *update = [NSMutableString string];
     NSMutableString *create = [NSMutableString string];
-
+    
+    sqlite3 *db = [DPDBManager database];
+    
+    NSDictionary *collectionInfo = [self collectionTypeInfo];
+    NSSet *tableColumns = [NSSet setWithArray:[self tableColumnsInfo:db]];
+    NSMutableSet *propertySet = [NSMutableSet set];
+    NSMutableSet *readyToAdd = [NSMutableSet set];
+    
     for (DBMETAPROP *pMeta in meta.props) {
         if (!pMeta.transient) {
+            [propertySet addObject:pMeta.propName];
+            if (![tableColumns containsObject:pMeta.propName]) {
+                [readyToAdd addObject:pMeta];
+            }
             [create appendString:[NSString stringWithFormat:@"%@ %@ ,",pMeta.propName,pMeta.dbtype]];
             [ins appendString:[NSString stringWithFormat:@"%@ ,",pMeta.propName]];
             [ins_1 appendString:[NSString stringWithFormat:@" ? ,"]];
             [update appendString:[NSString stringWithFormat:@" %@ = ?,",pMeta.propName]];
         }
         else{
-            /*
-             要在运行时
-             if ([pMeta.obType isEqualToString:@"ARRAY"]
-             || [pMeta.obType isEqualToString:@"SET"]) {
-             //一对多关系
-             
-             }
-             */
             //创建相应的表格
             if(isNSArrayType(pMeta.obType)
                ||isNSSetType(pMeta.obType)){
-                
-            }else {
-                Class clazz = NSClassFromString(pMeta.obType);
-                if ([clazz isSubclassOfClass:[DPDBObject class]]) {
-                    //创建关系表
-                    NSString *refInsert = [NSString stringWithFormat:@"create table if not exists %@_%@ (pk integer  auto_increment primary key, parent_id integer, child_id integer);",meta.tablename,pMeta.obType];
-//                    NSLog(@"%@",refInsert);
-                    //执行create
-                    sqlite3 *db = [DPDBManager database];
-                    char *errmsg = NULL;
-                    int result ;
-                    if ((result = sqlite3_exec(db, [refInsert UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
-                        NSLog(@"创建表失败 : %@_%@  errorCode : %d",meta.tablename,pMeta.obType,result);
-                    }else{
-                        NSLog(@"表: %@_%@ 创建成功",meta.tablename,pMeta.obType);
-                    }
-                    
-                    
-                    [meta.relation addObject:pMeta.obType];
-                }else{
-                    //创建关系关联表
-                    if (!refTableCreateFlag) {
-                        refTableCreateFlag = !refTableCreateFlag;
-                        NSString *createRefTable = [NSString stringWithFormat:@"create table if not exists tableRelation (tablename TEXT, relationtablename TEXT)"];
-                        sqlite3 *db = [DPDBManager database];
-                        char *errmsg = NULL;
-                        int result ;
-                        if ((result = sqlite3_exec(db, [createRefTable UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
-                            NSLog(@"创建失败关联表");
-                        }else{
-                            NSLog(@"创建成功关联表");
-                        }
-                    }
+                NSString *collectionInternalType ;
+                if (collectionInfo && (collectionInternalType = [collectionInfo objectForKey:pMeta.propName])!=nil) {
+                    pMeta.obInternalType = collectionInternalType;
+                    [meta.relation addObject:pMeta.obInternalType];
                 }
+            }else {
+                pMeta.obInternalType = pMeta.obType;
             }
         }
     }
@@ -291,21 +263,44 @@
     meta.del = [NSString stringWithFormat:@"delete from %@",meta.tablename];
     
     
-    
-    //执行SQL
+    //执行表相关SQL
     char *errmsg = NULL;
-    sqlite3 *db = [DPDBManager database];
     
+    
+    //创建表
     if (sqlite3_exec(db, [meta.create UTF8String], NULL, NULL, &errmsg)!=SQLITE_OK) {
         NSAssert(NO, @"创建表失败");
     }
     
+    //初始化序列
     NSMutableString *addSequenceSQL = [NSMutableString stringWithFormat:@"INSERT OR IGNORE INTO PKSEQ (name,seq) VALUES('%@',0)",meta.tablename];
     if (sqlite3_exec(db, [addSequenceSQL UTF8String], NULL, NULL, &errmsg)!=SQLITE_OK) {
         NSLog(@"初始化%@的pkseq失败",meta.tablename);
     }
     
+    //检查数据库表，如果有新增或删除属性，在数据库中做相应操作
+//    NSSet *readyToDelete = [tableColumns objectsPassingTest:^BOOL(id obj, BOOL *stop) {
+//        return (![obj isEqualToString:@"pk"])&&![propertySet containsObject:obj];
+//    }];
     
+    if (readyToAdd.count > 0) {
+        for (DBMETAPROP *column in readyToAdd) {
+            NSString *addColumn = [NSString stringWithFormat:@"alter table %@ add %@ %@",meta.tablename,column.propName,column.dbtype];
+            if (sqlite3_exec(db, [addColumn UTF8String], NULL, NULL, &errmsg)!=SQLITE_OK) {
+                NSLog(@"新增列%@失败",column.propName);
+            }
+        }
+    }
+    /*
+    if (readyToDelete.count > 0) {
+        for (NSString *columnName in readyToDelete) {
+            NSString *deleteColumn = [NSString stringWithFormat:@"alter table %@ drop column %@",meta.tablename,columnName];
+            if (sqlite3_exec(db, [deleteColumn UTF8String], NULL, NULL, &errmsg)!=SQLITE_OK) {
+                NSLog(@"删除列%@失败",columnName);
+            }
+        }
+    }
+    */
     sqlite3_stmt *stmt;
     NSMutableSet *relation = [NSMutableSet set];
     if (sqlite3_prepare_v2(db, [[NSString stringWithFormat:@"select relationtablename from tableRelation where tablename = '%@'",meta.tablename] UTF8String], -1, &stmt, nil) == SQLITE_OK) {
@@ -318,12 +313,47 @@
         }
     }
     
-#warning 应该和目前的进行比较，如果有改动就进行删除操作
-    [meta.relation intersectSet:relation];
+//    [meta.relation intersectSet:relation];
     
+    //创建对象关系表
+    for (NSString *relationClazz in meta.relation) {
+        if ([NSClassFromString(relationClazz) isSubclassOfClass:[DPDBObject class]]) {
+            NSString *refInsert = [NSString stringWithFormat:@"create table if not exists %@_%@ (pk integer  auto_increment primary key, parent_id integer, child_id integer);",meta.tablename,relationClazz];
+
+            char *errmsg = NULL;
+            int result ;
+            if ((result = sqlite3_exec(db, [refInsert UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
+                NSLog(@"创建表失败 : %@_%@  errorCode : %d",meta.tablename,relationClazz,result);
+            }else{
+                NSLog(@"表: %@_%@ 创建成功",meta.tablename,relationClazz);
+            }
+            free(errmsg);
+        }
+    }
+    
+    
+    //检测表结构改变，添加或者删除列，或者修改类型
     
     
     [[[DPDBManager singleton] metaInfos] setObject:meta forKey:meta.tablename];
+}
+
++ (NSArray *)tableColumnsInfo:(sqlite3 *)db
+{
+    NSMutableArray *columnsInfo = [NSMutableArray array];
+    
+    //查询表的列信息
+    NSString *queryCols = [NSString stringWithFormat:@"pragma table_info(%@)",NSStringFromClass([self class])];
+    sqlite3_stmt *stmt;
+    if (sqlite3_prepare_v2(db, [queryCols UTF8String],-1 , &stmt, nil) == SQLITE_OK) {
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            const unsigned char *colName = sqlite3_column_text(stmt, 1);
+            NSString *colString = [NSString stringWithUTF8String:(const char*)colName];
+            [columnsInfo addObject:colString];
+        }
+        sqlite3_finalize(stmt);
+    }
+    return columnsInfo;
 }
 
 + (DPDBObject *)queryByPk:(NSInteger)pk
@@ -333,7 +363,7 @@
     }
     id model ;
     
-    [self buildAndCheckMeta];
+    [self buildMeta];
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
     
@@ -362,7 +392,6 @@
             NSString *name;
             int position = 0;
             DBMETAPROP *prop;
-            //            [model setValue:[NSNumber numberWithInt:sqlite3_column_int(stmt, position++)] forKey:@"pk"];
             NSInteger thePk =sqlite3_column_int(stmt, position++);
             [model setPK:thePk];
             for (long i=0,len=props.count; i<len; i++) {
@@ -390,17 +419,7 @@
                     if (isCollectionType(prop.obType)) {
                         if (isNSArrayType(prop.obType)) {
                             if (!prop.obInternalType) {
-                                NSArray *tmpArr = [model valueForKey:prop.propName];
-                                if ([tmpArr respondsToSelector:@selector(DPInternalClazz)]) {
-                                    prop.obInternalType = tmpArr.DPInternalClazz;
-                                    if (!prop.obInternalType) {
-                                        [meta.relation addObject:prop.obInternalType];
-                                    }
-                                }
-                                
-                            }
-                            if (!prop.obInternalType) {
-                                NSLog(@"类%@中的属性 %@ 没有设置迭代元素的类类型",meta.tablename,prop.propName);
+                                NSLog(@"类%@中的属性 %@ 没有设置迭代元素的类类型,在+ collectionTypeInfo方法中设置",meta.tablename,prop.propName);
                             }else{
                                 NSArray *relationModelPks = [self queryRelationsByParentId:thePk parentTablename:meta.tablename childTablename:prop.obInternalType fromDB:db];
                                 NSMutableArray *propValue = [NSMutableArray array];
@@ -415,16 +434,7 @@
                             
                         }else if (isNSSetType(prop.obType)){
                             if (!prop.obInternalType) {
-                                NSSet *tmpSet = [model valueForKey:prop.propName];
-                                if ([tmpSet respondsToSelector:@selector(DPInternalClazz)]) {
-                                    prop.obInternalType = tmpSet.DPInternalClazz;
-                                    if (!prop.obInternalType) {
-                                        [meta.relation addObject:prop.obInternalType];
-                                    }
-                                }
-                            }
-                            if (!prop.obInternalType) {
-                                NSLog(@"类%@中的属性 %@ 没有设置迭代元素的类类型",meta.tablename,prop.propName);
+                                NSLog(@"类%@中的属性 %@ 没有设置迭代元素的类类型,在+ collectionTypeInfo方法中设置",meta.tablename,prop.propName);
                             }else{
                                 NSArray *relationModelPks = [self queryRelationsByParentId:thePk parentTablename:meta.tablename childTablename:prop.obInternalType fromDB:db];
                                 NSMutableArray *propValue = [NSMutableArray array];
@@ -490,7 +500,7 @@
     }
     NSMutableArray *models = [NSMutableArray array];
 
-    [self buildAndCheckMeta];
+    [self buildMeta];
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
     NSString *query;
@@ -506,7 +516,7 @@
 
 + (NSArray *)allObjects
 {
-    [self buildAndCheckMeta];
+    [self buildMeta];
     NSArray *result;
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
@@ -518,7 +528,7 @@
 
 + (void)deleteAll
 {
-    [self buildAndCheckMeta];
+    [self buildMeta];
     char *errmsg = NULL;
     int result ;
     sqlite3 *db = [DPDBManager database];
@@ -536,7 +546,7 @@
 
 + (void)deleteByPks:(NSArray *)pks
 {
-    [self buildAndCheckMeta];
+    [self buildMeta];
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
     for (NSNumber *pk in pks) {
@@ -546,7 +556,7 @@
 
 + (void)saveObjects:(NSArray *)models
 {
-    [self buildAndCheckMeta];
+    [self buildMeta];
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
     for (id model in models) {
@@ -596,20 +606,13 @@
                         if (!isNSDictionaryType(prop.obType)) {
                             //集合不为空
                             NSArray *refModels = [model valueForKey:name];
-                            if (refModels.DPInternalClazz
-                                && ![refModels.DPInternalClazz isEqualToString:@""]) {
-                                Class itemModelClazz = NSClassFromString(refModels.DPInternalClazz);
+                            if (refModels && refModels.count > 0 && prop.obInternalType) {
+                                Class itemModelClazz = NSClassFromString(prop.obInternalType);
                                 if ([itemModelClazz isSubclassOfClass:[DPDBObject class]]) {
-                                    if(refModels!=nil && refModels.count > 0){
-                                        
-                                        [itemModelClazz saveObjects:refModels];
-                                        NSString *childTableName = refModels.DPInternalClazz;
-                                        for (DPDBObject *model in refModels) {
-                                            [self createRelationWithParentId:pk parentTablename:meta.tablename relationId:[model pk] relationTablename:childTableName toDB:db];
-                                        }
-                                        if (prop.obInternalType == nil) {
-                                            prop.obInternalType = childTableName;
-                                        }
+                                    [itemModelClazz saveObjects:refModels];
+                                    NSString *childTableName = prop.obInternalType;
+                                    for (DPDBObject *model in refModels) {
+                                        [self createRelationWithParentId:pk parentTablename:meta.tablename relationId:[model pk] relationTablename:childTableName toDB:db];
                                     }
                                 }
                             }else{
@@ -669,9 +672,8 @@
                         if (!isNSDictionaryType(prop.obType)) {
                             //集合不为空
                             NSArray *refModels = [model valueForKey:name];
-                            if (refModels.DPInternalClazz
-                                && ![refModels.DPInternalClazz isEqualToString:@""]) {
-                                Class itemModelClazz = NSClassFromString(refModels.DPInternalClazz);
+                            if (refModels && refModels.count > 0 && prop.obInternalType) {
+                                Class itemModelClazz = NSClassFromString(prop.obInternalType);
                                 if ([itemModelClazz isSubclassOfClass:[DPDBObject class]]) {
                                     NSMutableArray *newRecords = [NSMutableArray array];
                                     for (DPDBObject *model in refModels) {
@@ -679,15 +681,10 @@
                                             [newRecords addObject:model];
                                         }
                                     }
-                                    if(refModels!=nil && refModels.count > 0){
-                                        [itemModelClazz saveObjects:refModels];
-                                        NSString *childTableName = refModels.DPInternalClazz;
-                                        for (DPDBObject *model in newRecords) {
-                                            [self createRelationWithParentId:pk parentTablename:meta.tablename relationId:[model pk] relationTablename:childTableName toDB:db];
-                                        }
-                                        if (prop.obInternalType==nil) {
-                                            prop.obInternalType = childTableName;
-                                        }
+                                    [itemModelClazz saveObjects:refModels];
+                                    NSString *childTableName = prop.obInternalType;
+                                    for (DPDBObject *model in newRecords) {
+                                        [self createRelationWithParentId:pk parentTablename:meta.tablename relationId:[model pk] relationTablename:childTableName toDB:db];
                                     }
                                 }
                             }else{
@@ -772,7 +769,7 @@
 
 + (void)syncSeq:(NSInteger)seq
 {
-    [self  buildAndCheckMeta];
+    [self  buildMeta];
     sqlite3 *db = [DPDBManager database];
     
     char *errmsg = NULL;
@@ -784,6 +781,7 @@
     sqlite3_free(errmsg);
 }
 
+/*
 + (void)buildAndCheckMeta
 {
     [[self class] buildMeta];
@@ -791,13 +789,13 @@
     if (!meta.buildRelation) {
         [[[self class] alloc] init];
     }
-}
+}*/
 
 
 //查询当前类的序列号
 + (NSInteger)currentSeq
 {
-    [self buildAndCheckMeta];
+    [self buildMeta];
     NSInteger pk = 1;
     sqlite3 *db = [DPDBManager database];
     sqlite3_stmt *stmt;
@@ -810,6 +808,11 @@
         sqlite3_finalize(stmt);
     }
     return pk;
+}
+
++ (NSDictionary *)collectionTypeInfo
+{
+    return nil;
 }
 
 
