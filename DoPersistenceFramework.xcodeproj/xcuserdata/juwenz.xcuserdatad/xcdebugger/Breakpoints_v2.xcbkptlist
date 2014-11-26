@@ -47,7 +47,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "722"
             endingLineNumber = "722"
-            landmarkName = "+currentSeq"
+            landmarkName = "+createRelationWithParentId:parentTablename:relationId:relationTablename:toDB:"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
