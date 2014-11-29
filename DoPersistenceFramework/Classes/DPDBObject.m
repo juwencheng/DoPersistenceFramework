@@ -12,6 +12,8 @@
 #import "DBMETA.h"
 #import "DBMETAPROP.h"
 
+#define DPDBDeleteAllCode -1000
+
 @implementation DPDBObject
 {
     DBMETA *classMeta;
@@ -83,6 +85,7 @@
     //关联删除
     sqlite3 *db = [DPDBManager database];
     [[self class] doInternalDeleteByPk:pk meta:classMeta fromDB:db];
+    pk = -1;
     
     return nil;
 }
@@ -112,7 +115,7 @@
 {
     char *errmsg = NULL;
     int result ;
-    if (parentId < 0) {
+    if (parentId == DPDBDeleteAllCode) {
         for (NSString *relationTablename in meta.relation) {
             
             NSArray *relationModelPks = [self queryRelationsByParentId:parentId parentTablename:meta.tablename childTablename:relationTablename fromDB:db];
@@ -127,7 +130,7 @@
                 NSLog(@"根据关联ID删除关系成功表: %@_%@ ",meta.tablename,relationTablename);
             }
         }
-    }else{
+    }else if(parentId > 0){
         for (NSString *relationTablename in meta.relation) {
             NSString *insertRelation = [NSString stringWithFormat:@"delete from %@_%@ where parent_id = %ld",meta.tablename,relationTablename,(long)parentId];
             if ((result = sqlite3_exec(db, [insertRelation UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
@@ -234,7 +237,8 @@
     for (DBMETAPROP *pMeta in meta.props) {
         if (!pMeta.transient) {
             [propertySet addObject:pMeta.propName];
-            if (![tableColumns containsObject:pMeta.propName]) {
+            //如果是在表已经建立后，并且还在新增的列
+            if (tableColumns.count > 0 &&![tableColumns containsObject:pMeta.propName]) {
                 [readyToAdd addObject:pMeta];
             }
             [create appendString:[NSString stringWithFormat:@"%@ %@ ,",pMeta.propName,pMeta.dbtype]];
@@ -278,11 +282,6 @@
         NSLog(@"初始化%@的pkseq失败",meta.tablename);
     }
     
-    //检查数据库表，如果有新增或删除属性，在数据库中做相应操作
-//    NSSet *readyToDelete = [tableColumns objectsPassingTest:^BOOL(id obj, BOOL *stop) {
-//        return (![obj isEqualToString:@"pk"])&&![propertySet containsObject:obj];
-//    }];
-    
     if (readyToAdd.count > 0) {
         for (DBMETAPROP *column in readyToAdd) {
             NSString *addColumn = [NSString stringWithFormat:@"alter table %@ add %@ %@",meta.tablename,column.propName,column.dbtype];
@@ -312,8 +311,6 @@
             }
         }
     }
-    
-//    [meta.relation intersectSet:relation];
     
     //创建对象关系表
     for (NSString *relationClazz in meta.relation) {
@@ -535,7 +532,7 @@
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
     
     
-    [self deleteRelationsByParentId:-1 meta:meta fromDB:db];
+    [self deleteRelationsByParentId:DPDBDeleteAllCode meta:meta fromDB:db];
     
     if ((result = sqlite3_exec(db, [meta.del UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
         NSLog(@"删除全部失败");

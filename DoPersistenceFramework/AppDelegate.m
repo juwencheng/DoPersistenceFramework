@@ -28,7 +28,8 @@
     
 //    [NSThread sleepForTimeInterval:1];
     
-    [Test deleteAll];
+    [self testPKAfterDelete];
+    
 //    NSLog(@"%d",[Test1 allObjects].count);
 //    NSAssert([Test allObjects].count == 0, @"成功");
 //    NSAssert([Test1 allObjects].count == 0,@"成功");
@@ -38,6 +39,17 @@
 //    NSLog(@"%lu",(unsigned long)arr.count);
 //    NSLog(@"%lu",(unsigned long)[[Test allObjects] count]);
     return YES;
+}
+
+- (void)testPKAfterDelete
+{
+    Test *test = [[Test alloc] init];
+    test.str = @"testPKAfterDelete";
+    [test save];
+    NSLog(@"%d",[test pk]);
+    [test deleteMe];
+    
+    NSLog(@"after delete %d",[test pk]);
 }
 
 - (void)addRelationObjects
