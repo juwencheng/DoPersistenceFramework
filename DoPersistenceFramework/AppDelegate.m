@@ -23,12 +23,12 @@
     
     
 //    [Test1 deleteAll];
-//    [self addRelationObjects];
+    [self addRelationObjects];
 //    [self testUpdateRelation];
     
 //    [NSThread sleepForTimeInterval:1];
     
-    [self testPKAfterDelete];
+//    [self testPKAfterDelete];
     
 //    NSLog(@"%d",[Test1 allObjects].count);
 //    NSAssert([Test allObjects].count == 0, @"成功");

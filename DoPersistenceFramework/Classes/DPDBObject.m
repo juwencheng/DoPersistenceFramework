@@ -33,7 +33,7 @@
         /*
         if (!classMeta.buildRelation) {
             for (DBMETAPROP *pMeta in classMeta.props) {
-                if (pMeta.transient) {
+                if (pMeta.isObjectType) {
                     //创建相应的表格
                     
                     if(isNSArrayType(pMeta.obType)
@@ -77,17 +77,16 @@
     [[self class] doInternalSave:self database:db classMeta:classMeta];
 }
 
-- (NSError *)deleteMe
+- (void)deleteMe
 {
     if (pk<0) {
-        return nil;
+        return ;
     }
     //关联删除
     sqlite3 *db = [DPDBManager database];
     [[self class] doInternalDeleteByPk:pk meta:classMeta fromDB:db];
     pk = -1;
     
-    return nil;
 }
 
 + (void)doInternalDeleteByPk:(NSInteger)pk
@@ -170,7 +169,7 @@
     for (NSString *propname in d.allKeys) {
         DBMETAPROP *propmeta = [[DBMETAPROP alloc] init];
         propmeta.propName = propname;
-        propmeta.transient = NO;
+        propmeta.isObjectType = NO;
         NSString *proptype = [d objectForKey:propname];
         //基础类型
         if ([proptype rangeOfString:@"@"].location == NSNotFound) {
@@ -201,13 +200,13 @@
         }else{
             NSString *className = [proptype substringWithRange:NSMakeRange(2, [proptype length]-3)];
             if (isNSArrayType(className)) {
-                propmeta.transient = YES;
+                propmeta.isObjectType = YES;
                 propmeta.obType = @"NSArray";
             }else if(isNSSetType(className)){
-                propmeta.transient = YES;
+                propmeta.isObjectType = YES;
                 propmeta.obType = @"NSSet";
             }else if(isNSDictionaryType(className)){
-                propmeta.transient = YES;
+                propmeta.isObjectType = YES;
                 propmeta.obType = @"NSDictionary";
             }else if(isNSStringType(className)){
                 propmeta.obType = @"NSString";
@@ -215,7 +214,7 @@
             }
             else{
                 propmeta.obType = className;
-                propmeta.transient = YES;
+                propmeta.isObjectType = YES;
             }
         }
         
@@ -229,18 +228,24 @@
     
     sqlite3 *db = [DPDBManager database];
     
+    //集合类型里面元素的实际类型
     NSDictionary *collectionInfo = [self collectionTypeInfo];
+    
+    //对象对应的表在数据库中的列信息
     NSSet *tableColumns = [NSSet setWithArray:[self tableColumnsInfo:db]];
+    
     NSMutableSet *propertySet = [NSMutableSet set];
     NSMutableSet *readyToAdd = [NSMutableSet set];
     
     for (DBMETAPROP *pMeta in meta.props) {
-        if (!pMeta.transient) {
+        if (!pMeta.isObjectType) {
             [propertySet addObject:pMeta.propName];
             //如果是在表已经建立后，并且还在新增的列
             if (tableColumns.count > 0 &&![tableColumns containsObject:pMeta.propName]) {
                 [readyToAdd addObject:pMeta];
             }
+            
+            //构造sql语句
             [create appendString:[NSString stringWithFormat:@"%@ %@ ,",pMeta.propName,pMeta.dbtype]];
             [ins appendString:[NSString stringWithFormat:@"%@ ,",pMeta.propName]];
             [ins_1 appendString:[NSString stringWithFormat:@" ? ,"]];
@@ -251,7 +256,8 @@
             if(isNSArrayType(pMeta.obType)
                ||isNSSetType(pMeta.obType)){
                 NSString *collectionInternalType ;
-                if (collectionInfo && (collectionInternalType = [collectionInfo objectForKey:pMeta.propName])!=nil) {
+                if (collectionInfo
+                    && (collectionInternalType = [collectionInfo objectForKey:pMeta.propName])!=nil) {
                     pMeta.obInternalType = collectionInternalType;
                     [meta.relation addObject:pMeta.obInternalType];
                 }
@@ -266,12 +272,13 @@
     meta.query = [NSString stringWithFormat:@"select pk , %@ from %@",[ins substringToIndex:(ins.length-1)],meta.tablename];
     meta.del = [NSString stringWithFormat:@"delete from %@",meta.tablename];
     
-    
     //执行表相关SQL
     char *errmsg = NULL;
     
     
     //创建表
+    //如果不存在，则直接创建
+    //如果存在表，并且新增列后，无法通过此语句实现增加列的效果
     if (sqlite3_exec(db, [meta.create UTF8String], NULL, NULL, &errmsg)!=SQLITE_OK) {
         NSAssert(NO, @"创建表失败");
     }
@@ -290,16 +297,8 @@
             }
         }
     }
+    
     /*
-    if (readyToDelete.count > 0) {
-        for (NSString *columnName in readyToDelete) {
-            NSString *deleteColumn = [NSString stringWithFormat:@"alter table %@ drop column %@",meta.tablename,columnName];
-            if (sqlite3_exec(db, [deleteColumn UTF8String], NULL, NULL, &errmsg)!=SQLITE_OK) {
-                NSLog(@"删除列%@失败",columnName);
-            }
-        }
-    }
-    */
     sqlite3_stmt *stmt;
     NSMutableSet *relation = [NSMutableSet set];
     if (sqlite3_prepare_v2(db, [[NSString stringWithFormat:@"select relationtablename from tableRelation where tablename = '%@'",meta.tablename] UTF8String], -1, &stmt, nil) == SQLITE_OK) {
@@ -311,6 +310,7 @@
             }
         }
     }
+     */
     
     //创建对象关系表
     for (NSString *relationClazz in meta.relation) {
@@ -327,10 +327,6 @@
             free(errmsg);
         }
     }
-    
-    
-    //检测表结构改变，添加或者删除列，或者修改类型
-    
     
     [[[DPDBManager singleton] metaInfos] setObject:meta forKey:meta.tablename];
 }
@@ -395,7 +391,7 @@
                 prop = props[i];
                 name = prop.propName;
                 type = prop.dbtype;
-                if (!prop.transient) {
+                if (!prop.isObjectType) {
                     if (type != nil) {
                         if ([[type lowercaseString] isEqualToString:@"integer"]
                             || [[type lowercaseString] isEqualToString:@"double"]
@@ -580,7 +576,7 @@
                 prop = properties[i];
                 name = prop.propName;
                 type = prop.dbtype;
-                if (!prop.transient) {
+                if (!prop.isObjectType) {
                     if (type != nil) {
                         if ([[type lowercaseString] isEqualToString:@"integer"]) {
                             sqlite3_bind_int(stmt, position, [[model valueForKey:name] intValue]);
@@ -613,7 +609,7 @@
                                     }
                                 }
                             }else{
-                                //不做任何处理，即为transient类型
+                                
                             }
                         }
                     }else if ([NSClassFromString(prop.obType) isSubclassOfClass:[DPDBObject class]]){
@@ -648,7 +644,7 @@
                 prop = properties[i];
                 name = prop.propName;
                 type = prop.dbtype;
-                if (!prop.transient) {
+                if (!prop.isObjectType) {
                     if (type != nil) {
                         if ([[type lowercaseString] isEqualToString:@"integer"]) {
                             sqlite3_bind_int(stmt, position, [[model valueForKey:name] intValue]);
@@ -685,7 +681,7 @@
                                     }
                                 }
                             }else{
-                                //不做任何处理，即为transient类型
+                                
                             }
                         }else{
                             NSLog(@"NSDictionary暂时没有实现");
@@ -774,7 +770,7 @@
     if (sqlite3_exec(db, [pkIncSQL UTF8String], NULL, NULL, &errmsg)) {
         NSLog(@"增加%@的主键失败!",NSStringFromClass([self class]));
     }
-    
+
     sqlite3_free(errmsg);
 }
 
