@@ -76,12 +76,37 @@
 */
 + (NSArray *)findByCriteria:(NSString *)criteriaString;
 
+/*!
+ @param criteriaString 条件语句
+ @param page 第几页 从1开始
+ @param pageLimit 每页数量
+ 
+ @return 查找到的对象，如果没有找到则返回nil
+ 
+ @description 根据条件查找对象，例如 "name like 'abc'"，注意不需要加 where
+ 
+*/
++ (NSArray *)findByCriteria:(NSString *)criteriaString
+                       page:(NSInteger)page
+                  pageLimit:(NSInteger)pageLimit;
+
 /**
  *  查询所有对象
  *
  *  @return 查询结果数组
  */
 + (NSArray *)allObjects;
+
+/*!
+ @param page 第几页 从1开始
+ @param pageLimit 每页数量
+ 
+ @return 查找到的对象，如果没有找到则返回nil
+ 
+ @description 分页查询对象
+ 
+ */
++ (NSArray *)objectsWithPage:(NSInteger)page pageLimit:(NSInteger)pageLimit;
 
 /**
  *  删除对象对应表中所有数据

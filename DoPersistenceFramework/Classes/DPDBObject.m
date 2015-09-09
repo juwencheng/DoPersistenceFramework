@@ -353,6 +353,19 @@
     return result;
 }
 
++ (NSArray *)findByCriteria:(NSString *)criteriaString
+                       page:(NSInteger)page
+                  pageLimit:(NSInteger)pageLimit {
+    [self buildMeta];
+    NSArray *result;
+    sqlite3 *db = [DPDBManager database];
+    DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
+    
+    NSString *query = [NSString stringWithFormat:@"%@ %@ limit %ld,%ld",meta.query,criteriaString,(long)(MAX((page-1),0) * pageLimit),(long)pageLimit];
+    result = [self doInternalQuery:query database:db classMeta:meta];
+    return result;
+}
+
 + (id)doInternalQuery:(NSString *)query
              database:(sqlite3 *)db
             classMeta:(DBMETA *)meta
@@ -503,8 +516,18 @@
     return result;
 }
 
-+ (void)deleteAll
-{
++ (NSArray *)objectsWithPage:(NSInteger)page pageLimit:(NSInteger)pageLimit {
+    [self buildMeta];
+    NSArray *result;
+    sqlite3 *db = [DPDBManager database];
+    DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
+    NSString *query = [NSString stringWithFormat:@"%@ limit %ld,%ld",meta.query,(long)(MAX((page-1),0) * pageLimit),(long)pageLimit];
+    
+    result = [self doInternalQuery:query database:db classMeta:meta];
+    return result;
+}
+
++ (void)deleteAll {
     [self buildMeta];
     char *errmsg = NULL;
     int result ;
@@ -513,7 +536,6 @@
     
     
     [self deleteRelationsByParentId:DPDBDeleteAllCode meta:meta fromDB:db];
-    
     if ((result = sqlite3_exec(db, [meta.del UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
         NSLog(@"删除全部失败");
     }else{
