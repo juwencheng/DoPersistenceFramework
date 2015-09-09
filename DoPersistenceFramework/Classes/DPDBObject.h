@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "NSArray+DPModelExtention.h"
 #import "NSSet+DPModelExtention.h"
-#import "ExtendNSLogFunctionality.h"
 
 #define isCollectionType(x) (isNSSetType(x) || isNSArrayType(x) || isNSDictionaryType(x))
 #define isNSArrayType(x) ([x isEqualToString:@"NSArray"] || [x isEqualToString:@"NSMutableArray"])
