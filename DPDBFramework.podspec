@@ -1,4 +1,26 @@
-#项目简介
+#
+#  Be sure to run `pod spec lint DPDBFramework.podspec' to ensure this is a
+#  valid spec and to remove all comments including this before submitting the spec.
+#
+#  To learn more about Podspec attributes see http://docs.cocoapods.org/specification.html
+#  To see working Podspecs in the CocoaPods repo see https://github.com/CocoaPods/Specs/
+#
+
+Pod::Spec.new do |s|
+
+  # ―――  Spec Metadata  ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
+  #
+  #  These will help people to find your library, and whilst it
+  #  can feel like a chore to fill in it's definitely to your advantage. The
+  #  summary should be tweet-length, and the description more in depth.
+  #
+
+  s.name         = "DPDBFramework"
+  s.version      = "0.4"
+  s.summary      = "面向对象的本地化持久方案，保存用 save，删除用 delete."
+
+  s.description  = <<-DESC
+                   #项目简介
 框架主要解决苹果开发过程中，数据本地持久化问题。开发初期，选用了sqlite，就一直折腾至今，不爱用`coredata`，或许它更加好用，不过人总有那么点执着，或者说固执，不是吗？废话不多说，开始介绍。
 #方法总览
 
@@ -117,4 +139,59 @@
 如果对上面两个需求不是很强烈的，可以尝试下哟，有问题欢迎一起探讨！！
 
 #参考&致谢
-这个是很重要滴，喝水不忘挖井人，框架的灵感来自sqliteobjectpersistence，从一行一行读里面代码学到了很多东西，它里面的某些功能甚至现在本猿也没有实现，不过对里面频繁计算部分做了优化，用了缓存换取CPU计算，带来的当然是时间上的优势，再次感谢sqliteobjectpersistence作者。
+这个是很重要滴，喝水不忘挖井人，框架的灵感来自sqliteobjectpersistence，从一行一行读里面代码学到了很多东西，它里面的某些功能至今也没有实现，不过对里面频繁计算部分做了优化，用了缓存换取CPU计算，带来了时间上的优势，再次感谢sqliteobjectpersistence作者。
+                   DESC
+
+  s.homepage     = "http://my.oschina.net/juwenz/blog"
+  s.license      = "MIT"
+  s.author             = { "juwenz" => "juwenz@icloud.com" }
+  s.platform     = :ios, "5.0"
+
+
+  s.source       = { :git => "https://git.oschina.net/juwenz/DoPersistenceFramework.git", :tag => s.version }
+
+  s.source_files  = "Classes", "Classes/**/*.{h,m}"
+  s.exclude_files = "Classes/Exclude"
+
+  # s.public_header_files = "Classes/**/*.h"
+
+
+  # ――― Resources ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
+  #
+  #  A list of resources included with the Pod. These are copied into the
+  #  target bundle with a build phase script. Anything else will be cleaned.
+  #  You can preserve files from being cleaned, please don't preserve
+  #  non-essential files like tests, examples and documentation.
+  #
+
+  # s.resource  = "icon.png"
+  # s.resources = "Resources/*.png"
+
+  # s.preserve_paths = "FilesToSave", "MoreFilesToSave"
+
+
+  # ――― Project Linking ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
+  #
+  #  Link your library with frameworks, or libraries. Libraries do not include
+  #  the lib prefix of their name.
+  #
+
+  # s.framework  = "SomeFramework"
+  # s.frameworks = "SomeFramework", "AnotherFramework"
+
+  # s.library   = "iconv"
+  # s.libraries = "iconv", "xml2"
+
+
+  # ――― Project Settings ――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
+  #
+  #  If your library depends on compiler flags you can set them in the xcconfig hash
+  #  where they will only apply to your library. If you depend on other Podspecs
+  #  you can include multiple dependencies to ensure it works.
+
+  # s.requires_arc = true
+
+  # s.xcconfig = { "HEADER_SEARCH_PATHS" => "$(SDKROOT)/usr/include/libxml2" }
+  # s.dependency "JSONKit", "~> 1.4"
+
+end
