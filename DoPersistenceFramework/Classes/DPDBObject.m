@@ -18,8 +18,8 @@
 {
     DBMETA *classMeta;
     
-    @private
-        NSInteger pk;
+@private
+    NSInteger pk;
 }
 
 
@@ -250,7 +250,7 @@
     //如果不存在，则直接创建
     //如果存在表，并且新增列后，无法通过此语句实现增加列的效果
     if (sqlite3_exec(db, [meta.create UTF8String], NULL, NULL, &errmsg)!=SQLITE_OK) {
-#if sqlDebug 
+#if sqlDebug
         NSLog(@"创建表 <%@> 失败 : <%@>",meta.tablename,meta.create);
 #endif
         NSAssert(NO, @"创建表失败");
@@ -275,24 +275,24 @@
     
     //检查关系表
     /*
-    sqlite3_stmt *stmt;
-    NSMutableSet *relation = [NSMutableSet set];
-    if (sqlite3_prepare_v2(db, [[NSString stringWithFormat:@"select relationtablename from tableRelation where tablename = '%@'",meta.tablename] UTF8String], -1, &stmt, nil) == SQLITE_OK) {
-        int ret ;
-        while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
-            const char *relationTable = (char *)sqlite3_column_text(stmt, 0);
-            if (relationTable!=NULL) {
-                [relation addObject:[NSString stringWithUTF8String:relationTable]];
-            }
-        }
-    }
+     sqlite3_stmt *stmt;
+     NSMutableSet *relation = [NSMutableSet set];
+     if (sqlite3_prepare_v2(db, [[NSString stringWithFormat:@"select relationtablename from tableRelation where tablename = '%@'",meta.tablename] UTF8String], -1, &stmt, nil) == SQLITE_OK) {
+     int ret ;
+     while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
+     const char *relationTable = (char *)sqlite3_column_text(stmt, 0);
+     if (relationTable!=NULL) {
+     [relation addObject:[NSString stringWithUTF8String:relationTable]];
+     }
+     }
+     }
      */
     
     //创建对象关系表 另一种方案是不用建中间表，直接扩展关系表结构
     for (NSString *relationClazz in meta.relation) {
         if ([NSClassFromString(relationClazz) isSubclassOfClass:[DPDBObject class]]) {
             NSString *refInsert = [NSString stringWithFormat:@"create table if not exists %@_%@ (pk integer  auto_increment primary key, parent_id integer, child_id integer);",meta.tablename,relationClazz];
-
+            
             char *errmsg = NULL;
             int result ;
             if ((result = sqlite3_exec(db, [refInsert UTF8String], NULL, NULL, &errmsg))!=SQLITE_OK) {
@@ -348,7 +348,7 @@
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
     
-    NSString *query = [NSString stringWithFormat:@"%@ %@",meta.query,criteriaString];
+    NSString *query = [NSString stringWithFormat:@"%@ where %@",meta.query,criteriaString];
     result = [self doInternalQuery:query database:db classMeta:meta];
     return result;
 }
@@ -489,7 +489,7 @@
         return nil;
     }
     NSMutableArray *models = [NSMutableArray array];
-
+    
     [self buildMeta];
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
@@ -511,7 +511,7 @@
     sqlite3 *db = [DPDBManager database];
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
     NSString *query = meta.query;
-
+    
     result = [self doInternalQuery:query database:db classMeta:meta];
     return result;
 }
@@ -778,7 +778,7 @@
     if (sqlite3_exec(db, [pkIncSQL UTF8String], NULL, NULL, &errmsg)) {
         NSLog(@"增加%@的主键失败!",NSStringFromClass([self class]));
     }
-
+    
     sqlite3_free(errmsg);
 }
 
