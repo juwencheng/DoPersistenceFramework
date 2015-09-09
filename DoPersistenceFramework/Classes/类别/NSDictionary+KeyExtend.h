@@ -12,10 +12,4 @@
 
 - (BOOL)hasKey:(NSString *)keyName;
 
-- (NSString *)convertToJSON;
-
-- (NSString *)convertToSQLPart;
-
-- (NSString *)convertToPostBody;
-
 @end

@@ -30,33 +30,6 @@
         pk = -1;
         [[self class] buildMeta];
         classMeta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
-        /*
-        if (!classMeta.buildRelation) {
-            for (DBMETAPROP *pMeta in classMeta.props) {
-                if (pMeta.isObjectType) {
-                    //创建相应的表格
-                    
-                    if(isNSArrayType(pMeta.obType)
-                       ||isNSSetType(pMeta.obType)){
-                        if (!pMeta.obInternalType) {
-                            NSArray *tmpArr = [self valueForKey:pMeta.propName];
-                            if ([tmpArr respondsToSelector:@selector(DPInternalClazz)]) {
-                                pMeta.obInternalType = tmpArr.DPInternalClazz;
-                                if (pMeta.obInternalType!=nil || ![pMeta.obInternalType isEqualToString:@""]) {
-                                    [classMeta.relation addObject:pMeta.obInternalType];
-                                }else{
-                                    NSLog(@"类 %@ 的属性 %@没有实现 DPInternalClazz 方法",classMeta.tablename,pMeta.propName);
-                                }
-                            }
-                            
-                        }
-                    }
-                    
-                }
-            }
-            classMeta.buildRelation = YES;
-        }*/
-
     }
     return self;
 }
@@ -146,7 +119,7 @@
 //构建tableview的元信息
 + (void)buildMeta
 {
-    DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
+    DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass(self)];
     if (meta) {
         return;
     }
@@ -202,22 +175,20 @@
             if (isNSArrayType(className)) {
                 propmeta.isObjectType = YES;
                 propmeta.obType = @"NSArray";
-            }else if(isNSSetType(className)){
+            }else if(isNSSetType(className)) {
                 propmeta.isObjectType = YES;
                 propmeta.obType = @"NSSet";
-            }else if(isNSDictionaryType(className)){
+            }else if(isNSDictionaryType(className)) {
                 propmeta.isObjectType = YES;
                 propmeta.obType = @"NSDictionary";
-            }else if(isNSStringType(className)){
+            }else if(isNSStringType(className)) {
                 propmeta.obType = @"NSString";
                 propmeta.dbtype = @"TEXT";
-            }
-            else{
+            }else {
                 propmeta.obType = className;
                 propmeta.isObjectType = YES;
             }
         }
-        
         [propsmeta addObject:propmeta];
     }
     meta.props = propsmeta;
@@ -250,12 +221,11 @@
             [ins appendString:[NSString stringWithFormat:@"%@ ,",pMeta.propName]];
             [ins_1 appendString:[NSString stringWithFormat:@" ? ,"]];
             [update appendString:[NSString stringWithFormat:@" %@ = ?,",pMeta.propName]];
-        }
-        else{
+        }else {
             //创建相应的表格
             if(isNSArrayType(pMeta.obType)
                ||isNSSetType(pMeta.obType)){
-                NSString *collectionInternalType ;
+                NSString *collectionInternalType;
                 if (collectionInfo
                     && (collectionInternalType = [collectionInfo objectForKey:pMeta.propName])!=nil) {
                     pMeta.obInternalType = collectionInternalType;
@@ -280,13 +250,18 @@
     //如果不存在，则直接创建
     //如果存在表，并且新增列后，无法通过此语句实现增加列的效果
     if (sqlite3_exec(db, [meta.create UTF8String], NULL, NULL, &errmsg)!=SQLITE_OK) {
+#if sqlDebug 
+        NSLog(@"创建表 <%@> 失败 : <%@>",meta.tablename,meta.create);
+#endif
         NSAssert(NO, @"创建表失败");
     }
     
     //初始化序列
     NSMutableString *addSequenceSQL = [NSMutableString stringWithFormat:@"INSERT OR IGNORE INTO PKSEQ (name,seq) VALUES('%@',0)",meta.tablename];
     if (sqlite3_exec(db, [addSequenceSQL UTF8String], NULL, NULL, &errmsg)!=SQLITE_OK) {
-        NSLog(@"初始化%@的pkseq失败",meta.tablename);
+#if sqlDebug
+        NSLog(@"初始化 <%@> 的pkseq失败 : <%@>",meta.tablename,addSequenceSQL);
+#endif
     }
     
     if (readyToAdd.count > 0) {
@@ -298,6 +273,7 @@
         }
     }
     
+    //检查关系表
     /*
     sqlite3_stmt *stmt;
     NSMutableSet *relation = [NSMutableSet set];
@@ -312,7 +288,7 @@
     }
      */
     
-    //创建对象关系表
+    //创建对象关系表 另一种方案是不用建中间表，直接扩展关系表结构
     for (NSString *relationClazz in meta.relation) {
         if ([NSClassFromString(relationClazz) isSubclassOfClass:[DPDBObject class]]) {
             NSString *refInsert = [NSString stringWithFormat:@"create table if not exists %@_%@ (pk integer  auto_increment primary key, parent_id integer, child_id integer);",meta.tablename,relationClazz];
@@ -327,12 +303,10 @@
             free(errmsg);
         }
     }
-    
     [[[DPDBManager singleton] metaInfos] setObject:meta forKey:meta.tablename];
 }
 
-+ (NSArray *)tableColumnsInfo:(sqlite3 *)db
-{
++ (NSArray *)tableColumnsInfo:(sqlite3 *)db {
     NSMutableArray *columnsInfo = [NSMutableArray array];
     
     //查询表的列信息
@@ -368,9 +342,19 @@
     return model;
 }
 
++ (NSArray *)findByCriteria:(NSString *)criteriaString {
+    [self buildMeta];
+    NSArray *result;
+    sqlite3 *db = [DPDBManager database];
+    DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
+    
+    NSString *query = [NSString stringWithFormat:@"%@ %@",meta.query,criteriaString];
+    result = [self doInternalQuery:query database:db classMeta:meta];
+    return result;
+}
+
 + (id)doInternalQuery:(NSString *)query
              database:(sqlite3 *)db
-//            statement:(sqlite3_stmt *)stmt
             classMeta:(DBMETA *)meta
 {
     sqlite3_stmt *stmt;
@@ -562,6 +546,8 @@
     sqlite3_stmt *stmt;
     NSError *err;
     NSInteger pk = [model pk];
+    
+    //没有保存的对象
     if (pk < 0) {
         pk = [DPDBManager seqWithClazz:meta.tablename];
         [model setPK:pk];
@@ -593,12 +579,11 @@
                         position ++;
                     }
                 }else{
-                    
-                    //NSLog(@"暂时未实现集合和对象类型");
                     if (isCollectionType(prop.obType)) {
+                        //非字典类型的实现
                         if (!isNSDictionaryType(prop.obType)) {
-                            //集合不为空
                             NSArray *refModels = [model valueForKey:name];
+                            //集合不为空
                             if (refModels && refModels.count > 0 && prop.obInternalType) {
                                 Class itemModelClazz = NSClassFromString(prop.obInternalType);
                                 if ([itemModelClazz isSubclassOfClass:[DPDBObject class]]) {
@@ -633,6 +618,7 @@
             err = [NSError errorWithDomain:kDPDBErrorDomain code:kDPDBInsertSQLError userInfo:@{@"error":[NSString stringWithFormat: @"插入语句 <%@> 错误，请检查",meta.insert]}];
         }
     }else{
+        //执行更新操作
         if (sqlite3_prepare_v2(db, [meta.update UTF8String], -1, &stmt, nil) == SQLITE_OK) {
             NSString *type;
             NSString *name;
@@ -773,17 +759,6 @@
 
     sqlite3_free(errmsg);
 }
-
-/*
-+ (void)buildAndCheckMeta
-{
-    [[self class] buildMeta];
-    DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
-    if (!meta.buildRelation) {
-        [[[self class] alloc] init];
-    }
-}*/
-
 
 //查询当前类的序列号
 + (NSInteger)currentSeq

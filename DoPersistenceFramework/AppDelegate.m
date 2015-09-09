@@ -21,6 +21,10 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
+    NSArray *arr = @[@"abc",@"abcdddd"];
+    NSString *strPart = @"abcd";
+    NSString *str = [NSString stringWithFormat:@"%@ddd",strPart];
+    NSLog(@"%d",[arr containsObject:str]);
     
 //    [Test1 deleteAll];
     [self addRelationObjects];
@@ -38,6 +42,8 @@
 //    NSArray *arr = tt.arr;
 //    NSLog(@"%lu",(unsigned long)arr.count);
 //    NSLog(@"%lu",(unsigned long)[[Test allObjects] count]);
+    
+    [self testPredicate];
     return YES;
 }
 
@@ -102,6 +108,37 @@
     
     Test *updateTest = [[Test allObjects] lastObject];
     NSLog(@"%@",updateTest.str);
+}
+
+- (void)testPredicate {
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+    for (NSInteger i = 0; i < 1000; i++) {
+        [dictionary setValue:[NSString stringWithFormat:@"abcd%ld",(long)i] forKey:[NSString stringWithFormat:@"addda%ld",(long)i]];
+    }
+    
+    NSString *targetStr = @"addda999";
+    NSDate *start = [NSDate date];
+    NSPredicate *p = [NSPredicate predicateWithFormat:@"SELF == %@",targetStr];
+    NSArray *arr = [dictionary.allKeys filteredArrayUsingPredicate:p];
+    NSDate *end = [NSDate date];
+    
+    NSLog(@"predicate time : %f , result : %ld",[end timeIntervalSinceDate:start],arr.count);
+    
+    start = [NSDate date];
+    BOOL flag = [dictionary.allKeys containsObject:targetStr];
+    end = [NSDate date];
+    NSLog(@"contains time : %f , result : %ld",[end timeIntervalSinceDate:start],flag);
+    
+    start = [NSDate date];
+    NSArray *allKeys = dictionary.allKeys;
+    for (NSString *s in allKeys) {
+        if ([s isEqualToString:targetStr]) {
+            break;
+        }
+    }
+    end = [NSDate date];
+    NSLog(@"for time : %f , result : %ld",[end timeIntervalSinceDate:start],flag);
+    
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {

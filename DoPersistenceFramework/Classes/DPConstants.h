@@ -9,23 +9,24 @@
 #ifndef DoPersistenceFramework_DPConstants_h
 #define DoPersistenceFramework_DPConstants_h
 
-#define kDPDBErrorDomain @"com.jackdono"
+#define sqlDebug  1
 
-#define kDPDBInsertError 11
-#define kDPDBInsertSQLError 110
-#define kDPDBInsertDataBindError 111
+static NSString *const kDPDBErrorDomain = @"com.jackdono";
 
-#define kDPDBDeleteError 12
-#define kDPDBDeleteSQLError 120
-#define kDPDBDeleteDataBindError 121
+const static NSInteger kDPDBInsertError = 11;
+const static NSInteger kDPDBInsertSQLError = 110;
+const static NSInteger kDPDBInsertDataBindError = 111;
 
-#define kDPDBUpdateError 13
-#define kDPDBUpdateSQLError 130
-#define kDPDBUpdateDataBindError 131
+const static NSInteger kDPDBDeleteError = 12;
+const static NSInteger kDPDBDeleteSQLError = 120;
+const static NSInteger kDPDBDeleteDataBindError = 121;
 
-#define kPDDBQueryError 14
-#define kPDDBQuerySQLError 140
-#define kPDDBQueryDataBindError 141
+const static NSInteger kDPDBUpdateError = 13;
+const static NSInteger kDPDBUpdateSQLError = 14;
+const static NSInteger kDPDBUpdateDataBindError = 131;
 
+const static NSInteger kPDDBQueryError = 14;
+const static NSInteger kPDDBQuerySQLError = 140;
+const static NSInteger kPDDBQueryDataBindError = 141;
 
 #endif

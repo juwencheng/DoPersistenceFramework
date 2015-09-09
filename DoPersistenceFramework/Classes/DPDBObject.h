@@ -66,6 +66,16 @@
  */
 + (DPDBObject *)queryByPk:(NSInteger)pk;
 
+/*!
+ @param criteriaString 条件语句
+ 
+ @return 查找到的对象，如果没有找到则返回nil
+ 
+ @description 根据条件查找对象，例如 "name like 'abc'"，注意不需要加 where
+ 
+*/
++ (NSArray *)findByCriteria:(NSString *)criteriaString;
+
 /**
  *  查询所有对象
  *
