@@ -11,6 +11,8 @@
 		3344AB8F1A076D1F00538864 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3344AB8E1A076D1F00538864 /* libz.dylib */; };
 		3344AB921A076E6D00538864 /* DPDBManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3344AB911A076E6D00538864 /* DPDBManager.m */; };
 		3344AB951A079F9600538864 /* Test1.m in Sources */ = {isa = PBXBuildFile; fileRef = 3344AB941A079F9600538864 /* Test1.m */; };
+		3369EA7D1EF91B7900FD66D3 /* DPDBObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 33B458F319FE67E700330BC4 /* DPDBObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3369EA7E1EF91B8B00FD66D3 /* DPDBManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 3344AB901A076E6D00538864 /* DPDBManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		33B384AA1A0B927800F617F4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33B384A91A0B927800F617F4 /* Foundation.framework */; };
 		33B458CF19FE679F00330BC4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B458CE19FE679F00330BC4 /* main.m */; };
 		33B458D219FE679F00330BC4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B458D119FE679F00330BC4 /* AppDelegate.m */; };
@@ -222,6 +224,18 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		3369EA7C1EF91B6500FD66D3 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3369EA7D1EF91B7900FD66D3 /* DPDBObject.h in Headers */,
+				3369EA7E1EF91B8B00FD66D3 /* DPDBManager.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
 		33B458C819FE679F00330BC4 /* DoPersistenceFramework */ = {
 			isa = PBXNativeTarget;
@@ -230,6 +244,7 @@
 				33B458C519FE679F00330BC4 /* Sources */,
 				33B458C619FE679F00330BC4 /* Frameworks */,
 				33B458C719FE679F00330BC4 /* Resources */,
+				3369EA7C1EF91B6500FD66D3 /* Headers */,
 			);
 			buildRules = (
 			);
@@ -455,6 +470,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				INFOPLIST_FILE = DoPersistenceFramework/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -466,6 +482,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				INFOPLIST_FILE = DoPersistenceFramework/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
