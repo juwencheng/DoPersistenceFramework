@@ -7,7 +7,7 @@
 //
 
 #import "ViewController.h"
-
+#import "Test1.h"
 @interface ViewController ()
 
 @end
@@ -16,12 +16,25 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
+    
+    for (int i = 0; i < 20; i++) {
+        [NSThread detachNewThreadSelector:@selector(findObjects) toTarget:self withObject:nil];
+    }
+    
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)createObject {
+    Test1 *test = [[Test1 alloc] init];
+    test.name = @"test";
+    [test save];
+}
+
+- (void)deleteObjects {
+    [Test1 deleteAll];
+}
+
+- (void)findObjects {
+    [Test1 allObjects];
 }
 
 @end
