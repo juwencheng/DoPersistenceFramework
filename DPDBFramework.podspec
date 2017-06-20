@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "DPDBFramework"
-  s.version      = "0.4.1"
+  s.version      = "0.4.2"
   s.summary      = "面向对象的本地化持久方案，保存用 save，删除用 delete."
 
   s.description  = <<-DESC
