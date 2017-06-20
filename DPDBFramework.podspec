@@ -153,9 +153,10 @@ Pod::Spec.new do |s|
   s.source_files  = "Classes", "DoPersistenceFramework/Classes/**/*.{h,m}"
   s.exclude_files = "Classes/Exclude"
 
-
+  s.framework  = "Foundation"
   # s.library   = "iconv"
   s.libraries = "sqlite3", "z"
   # s.requires_arc = true
+  s.xcconfig = { "HEADER_SEARCH_PATHS" => "$(SDKROOT)/usr/include/sqlite3"}
 
 end

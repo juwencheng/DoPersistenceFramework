@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3344AB8D1A076D1000538864 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3344AB8C1A076D1000538864 /* libsqlite3.dylib */; };
-		3344AB8F1A076D1F00538864 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3344AB8E1A076D1F00538864 /* libz.dylib */; };
 		3344AB921A076E6D00538864 /* DPDBManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3344AB911A076E6D00538864 /* DPDBManager.m */; };
 		3344AB951A079F9600538864 /* Test1.m in Sources */ = {isa = PBXBuildFile; fileRef = 3344AB941A079F9600538864 /* Test1.m */; };
+		3369EA831EF91F2700FD66D3 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 3369EA821EF91F2700FD66D3 /* libsqlite3.tbd */; };
+		3369EA851EF91F2D00FD66D3 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 3369EA841EF91F2D00FD66D3 /* libz.tbd */; };
 		33B384AA1A0B927800F617F4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33B384A91A0B927800F617F4 /* Foundation.framework */; };
 		33B458CF19FE679F00330BC4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B458CE19FE679F00330BC4 /* main.m */; };
 		33B458D219FE679F00330BC4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 33B458D119FE679F00330BC4 /* AppDelegate.m */; };
@@ -41,13 +41,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		3344AB8C1A076D1000538864 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
-		3344AB8E1A076D1F00538864 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		3344AB901A076E6D00538864 /* DPDBManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPDBManager.h; sourceTree = "<group>"; };
 		3344AB911A076E6D00538864 /* DPDBManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DPDBManager.m; sourceTree = "<group>"; };
 		3344AB931A079F9600538864 /* Test1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Test1.h; sourceTree = "<group>"; };
 		3344AB941A079F9600538864 /* Test1.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Test1.m; sourceTree = "<group>"; };
 		3344AB961A07A60700538864 /* DPConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DPConstants.h; sourceTree = "<group>"; };
+		3369EA821EF91F2700FD66D3 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		3369EA841EF91F2D00FD66D3 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		33B384A91A0B927800F617F4 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		33B458C919FE679F00330BC4 /* DoPersistenceFramework.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DoPersistenceFramework.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		33B458CD19FE679F00330BC4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -87,9 +87,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3369EA851EF91F2D00FD66D3 /* libz.tbd in Frameworks */,
+				3369EA831EF91F2700FD66D3 /* libsqlite3.tbd in Frameworks */,
 				33B384AA1A0B927800F617F4 /* Foundation.framework in Frameworks */,
-				3344AB8F1A076D1F00538864 /* libz.dylib in Frameworks */,
-				3344AB8D1A076D1000538864 /* libsqlite3.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,15 +103,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3369EA811EF91F2700FD66D3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3369EA841EF91F2D00FD66D3 /* libz.tbd */,
+				3369EA821EF91F2700FD66D3 /* libsqlite3.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		33B458C019FE679F00330BC4 = {
 			isa = PBXGroup;
 			children = (
 				33B384A91A0B927800F617F4 /* Foundation.framework */,
-				3344AB8E1A076D1F00538864 /* libz.dylib */,
-				3344AB8C1A076D1000538864 /* libsqlite3.dylib */,
 				33B458CB19FE679F00330BC4 /* DoPersistenceFramework */,
 				33B458E519FE679F00330BC4 /* DoPersistenceFrameworkTests */,
 				33B458CA19FE679F00330BC4 /* Products */,
+				3369EA811EF91F2700FD66D3 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
