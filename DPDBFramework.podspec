@@ -144,7 +144,7 @@ Pod::Spec.new do |s|
 
   s.homepage     = "http://my.oschina.net/juwenz/blog"
   s.license      = "MIT"
-  s.author             = { "juwenz" => "juwenz@icloud.com" }
+  s.author             = { "juwenz" => "jabarier@gmail.com" }
   s.platform     = :ios, "5.0"
 
 
