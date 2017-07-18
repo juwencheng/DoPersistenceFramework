@@ -13,6 +13,7 @@
 #import "DBMETAPROP.h"
 
 #define DPDBDeleteAllCode -1000
+#define SUPERCLASS [DPDBObject class]
 
 @implementation DPDBObject
 {
@@ -29,6 +30,7 @@
         pk = -1;
         [[self class] buildMeta];
         classMeta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
+        
     }
     return self;
 }
@@ -66,7 +68,7 @@
                         meta:(DBMETA *)meta
                       fromDB:(sqlite3 *)db
 {
-    @synchronized (self) {
+    @synchronized (SUPERCLASS) {
         if (pk < 0) {
             return;
         }
@@ -88,7 +90,7 @@
                              meta:(DBMETA *)meta
                            fromDB:(sqlite3 *)db
 {
-    @synchronized (self) {
+    @synchronized (SUPERCLASS) {
         char *errmsg = NULL;
         int result ;
         if (parentId == DPDBDeleteAllCode) {
@@ -123,6 +125,9 @@
 //构建tableview的元信息
 + (void)buildMeta
 {
+    @synchronized (SUPERCLASS) {
+        
+    
     DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass(self)];
     if (meta) {
         return;
@@ -249,7 +254,6 @@
     //执行表相关SQL
     char *errmsg = NULL;
     
-    
     //创建表
     //如果不存在，则直接创建
     //如果存在表，并且新增列后，无法通过此语句实现增加列的效果
@@ -307,7 +311,7 @@
             free(errmsg);
         }
     }
-    
+    }
 }
 
 + (NSArray *)tableColumnsInfo:(sqlite3 *)db {
@@ -374,7 +378,7 @@
              database:(sqlite3 *)db
             classMeta:(DBMETA *)meta
 {
-    @synchronized (self) {
+    @synchronized (SUPERCLASS) {
         sqlite3_stmt *stmt;
         NSMutableArray *result = [NSMutableArray array];
         NSArray *props = meta.props;
@@ -534,7 +538,7 @@
 }
 
 + (void)deleteAll {
-    @synchronized (self) {
+    @synchronized (SUPERCLASS) {
         [self buildMeta];
         char *errmsg = NULL;
         int result ;
@@ -553,7 +557,7 @@
 
 + (void)deleteByPks:(NSArray *)pks
 {
-    @synchronized (self) {
+    @synchronized (SUPERCLASS) {
         [self buildMeta];
         sqlite3 *db = [DPDBManager database];
         DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
@@ -565,7 +569,7 @@
 
 + (void)saveObjects:(NSArray *)models
 {
-    @synchronized (self) {
+    @synchronized (SUPERCLASS) {
         [self buildMeta];
         sqlite3 *db = [DPDBManager database];
         DBMETA *meta = [[[DPDBManager singleton] metaInfos] objectForKey:NSStringFromClass([self class])];
@@ -577,7 +581,7 @@
 
 + (void)doInternalSave:(DPDBObject *)model database:(sqlite3 *)db classMeta:(DBMETA*)meta
 {
-    @synchronized (self) {
+    @synchronized (SUPERCLASS) {
         sqlite3_stmt *stmt;
         NSError *err;
         NSInteger pk = [model pk];
