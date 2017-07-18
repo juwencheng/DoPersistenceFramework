@@ -27,7 +27,7 @@
     NSLog(@"%d",[arr containsObject:str]);
     
 //    [Test1 deleteAll];
-    [self addRelationObjects];
+//    [self addRelationObjects];
 //    [self testUpdateRelation];
     
 //    [NSThread sleepForTimeInterval:1];
@@ -43,7 +43,7 @@
 //    NSLog(@"%lu",(unsigned long)arr.count);
 //    NSLog(@"%lu",(unsigned long)[[Test allObjects] count]);
     
-    [self testPredicate];
+//    [self testPredicate];
     return YES;
 }
 

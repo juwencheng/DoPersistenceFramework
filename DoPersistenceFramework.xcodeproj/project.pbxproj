@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		29D888B01F1DBC1A00080B71 /* Obj1.m in Sources */ = {isa = PBXBuildFile; fileRef = 29D888AF1F1DBC1A00080B71 /* Obj1.m */; };
+		29D888B31F1DBC2400080B71 /* Super.m in Sources */ = {isa = PBXBuildFile; fileRef = 29D888B21F1DBC2400080B71 /* Super.m */; };
+		29D888B61F1DBCA500080B71 /* Obj2.m in Sources */ = {isa = PBXBuildFile; fileRef = 29D888B51F1DBCA500080B71 /* Obj2.m */; };
 		3344AB921A076E6D00538864 /* DPDBManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3344AB911A076E6D00538864 /* DPDBManager.m */; };
 		3344AB951A079F9600538864 /* Test1.m in Sources */ = {isa = PBXBuildFile; fileRef = 3344AB941A079F9600538864 /* Test1.m */; };
 		3369EA831EF91F2700FD66D3 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 3369EA821EF91F2700FD66D3 /* libsqlite3.tbd */; };
@@ -41,6 +44,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		29D888AE1F1DBC1A00080B71 /* Obj1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Obj1.h; sourceTree = "<group>"; };
+		29D888AF1F1DBC1A00080B71 /* Obj1.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Obj1.m; sourceTree = "<group>"; };
+		29D888B11F1DBC2400080B71 /* Super.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Super.h; sourceTree = "<group>"; };
+		29D888B21F1DBC2400080B71 /* Super.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Super.m; sourceTree = "<group>"; };
+		29D888B41F1DBCA500080B71 /* Obj2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Obj2.h; sourceTree = "<group>"; };
+		29D888B51F1DBCA500080B71 /* Obj2.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Obj2.m; sourceTree = "<group>"; };
 		3344AB901A076E6D00538864 /* DPDBManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPDBManager.h; sourceTree = "<group>"; };
 		3344AB911A076E6D00538864 /* DPDBManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DPDBManager.m; sourceTree = "<group>"; };
 		3344AB931A079F9600538864 /* Test1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Test1.h; sourceTree = "<group>"; };
@@ -146,6 +155,12 @@
 				33B458D919FE679F00330BC4 /* Images.xcassets */,
 				33B458DB19FE679F00330BC4 /* LaunchScreen.xib */,
 				33B458CC19FE679F00330BC4 /* Supporting Files */,
+				29D888AE1F1DBC1A00080B71 /* Obj1.h */,
+				29D888AF1F1DBC1A00080B71 /* Obj1.m */,
+				29D888B11F1DBC2400080B71 /* Super.h */,
+				29D888B21F1DBC2400080B71 /* Super.m */,
+				29D888B41F1DBCA500080B71 /* Obj2.h */,
+				29D888B51F1DBCA500080B71 /* Obj2.m */,
 			);
 			path = DoPersistenceFramework;
 			sourceTree = "<group>";
@@ -329,10 +344,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				33B458F519FE67E700330BC4 /* DPDBObject.m in Sources */,
+				29D888B31F1DBC2400080B71 /* Super.m in Sources */,
 				33B458FF19FE70DD00330BC4 /* DBMETAPROP.m in Sources */,
 				33C9A2651A19F2AA00BE93E2 /* NSDictionary+KeyExtend.m in Sources */,
+				29D888B61F1DBCA500080B71 /* Obj2.m in Sources */,
 				33B458D519FE679F00330BC4 /* ViewController.m in Sources */,
 				3344AB951A079F9600538864 /* Test1.m in Sources */,
+				29D888B01F1DBC1A00080B71 /* Obj1.m in Sources */,
 				33C9A26C1A19F52E00BE93E2 /* ExtendNSLogFunctionality.m in Sources */,
 				33C9A2681A19F2B300BE93E2 /* NSString+DOTypeConvert.m in Sources */,
 				33B458D219FE679F00330BC4 /* AppDelegate.m in Sources */,
